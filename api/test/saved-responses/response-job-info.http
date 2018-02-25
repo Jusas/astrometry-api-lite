@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Date: Sat, 24 Feb 2018 19:47:37 GMT
+Server: Apache/2.4.18 (Ubuntu) mod_wsgi/4.3.0 Python/2.7.12
+Access-Control-Allow-Origin: *
+Content-Type: text/plain; charset=UTF-8
+Vary: Accept-Encoding
+Content-Encoding: gzip
+Content-Length: 229
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+
+{"status": "success", "machine_tags": [], "calibration": {"parity": 1.0, "orientation": 90.03717652149982, "pixscale": 2.068178591744129, "radius": 0.36573315235860415, "ra": 290.2376611945419, "dec": 11.13982601721811}, "tags": [], "original_filename": "ldn673s_block1123.jpg", "objects_in_field": []}

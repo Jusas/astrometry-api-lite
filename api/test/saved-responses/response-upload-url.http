@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Date: Sat, 24 Feb 2018 19:39:18 GMT
+Server: Apache/2.4.18 (Ubuntu) mod_wsgi/4.3.0 Python/2.7.12
+Access-Control-Allow-Origin: *
+Content-Type: text/plain; charset=UTF-8
+Vary: Accept-Encoding
+Content-Encoding: gzip
+Content-Length: 96
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+
+{"status": "success", "subid": 1942145, "hash": "6024b45a16bfb5af7a73735cbabdf2b462c11214"}
