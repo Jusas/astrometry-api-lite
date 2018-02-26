@@ -19,7 +19,7 @@ export class SubmissionsController {
     let started = <any>status.processing_started;
     let finished = <any>status.processing_finished;
     started = started ? datetime.create(started).format("Y-m-d H:M:S.NZ") : "None";
-    finished = started ? datetime.create(finished).format("Y-m-d H:M:S.NZ") : "None";
+    finished = finished ? datetime.create(finished).format("Y-m-d H:M:S.NZ") : "None";
 
     let jobs = [null];
     let job_calibrations = [];

@@ -10,6 +10,17 @@
             "name": "Attach by Process ID",
             "processId": "${command:PickProcess}",
             "protocol": "inspector"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch worker",
+            "program": "${workspaceFolder}/worker/dist/worker/main.js",
+            "args": [
+                "-c",
+                "dist/config-worker.json"
+            ],
+            "cwd": "${workspaceFolder}/worker"
         }
     ]
 }

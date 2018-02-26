@@ -1,0 +1,4 @@
+{
+	"database": "workdb.db",
+	"queueFileUploadDir": "/tmp/astrometry-queue"
+}

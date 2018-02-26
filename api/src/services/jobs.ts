@@ -1,11 +1,10 @@
 import * as sqlite from "sqlite";
 import { JobParams, JobFileInfo, JobQueueEntry, CreatedJobEntry, JobStatus, JobCalibrationResultData } from "../models/job";
 import * as SystemSettings from "../settings";
+import * as cfg from "../configuration";
 var crypto = require("crypto");
 var datetime = require("node-datetime");
 const fs = require('fs');
-
-let dbFile = `${SystemSettings.rootDir()}/../database/workdb.db`;
 
 export async function queue(fileInfo: JobFileInfo, parameters: JobParams): Promise<CreatedJobEntry> {
 
@@ -14,6 +13,7 @@ export async function queue(fileInfo: JobFileInfo, parameters: JobParams): Promi
 
 	let p = parameters;
 
+	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
 
 	let insertStatement = `INSERT INTO JobQueue (created, processing_state, filename, original_filename, url`;
@@ -63,6 +63,7 @@ export async function queue(fileInfo: JobFileInfo, parameters: JobParams): Promi
 
 export async function getStatus(id: number): Promise<JobStatus> {
 
+	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
 	
 	let query = "SELECT processing_started, processing_finished, processing_state FROM JobQueue WHERE id = ?";
@@ -84,6 +85,7 @@ export async function getStatus(id: number): Promise<JobStatus> {
 
 export async function getCalibrationData(id: number): Promise<JobCalibrationResultData> {
 	
+	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
 	
 	let query = `SELECT result_parity, result_orientation, result_pixscale, 
@@ -99,6 +101,7 @@ export async function getCalibrationData(id: number): Promise<JobCalibrationResu
 
 export async function getFullData(id: number): Promise<JobQueueEntry> {
 	
+	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
 	let query = `SELECT * FROM JobQueue WHERE id = ?`;
 	var stmt = await db.prepare(query);

@@ -1,0 +1,4 @@
+{
+	"database": "../../api/dist/workdb.db",
+	"maxConcurrentWorkers": 2
+}

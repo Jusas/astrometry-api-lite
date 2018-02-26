@@ -2,6 +2,7 @@ import * as express from "express";
 import * as morgan from "morgan";
 import * as multer from "multer";
 import * as bodyParser from "body-parser";
+import * as cfg from "./configuration";
 import * as loginController from "./controllers/login";
 import * as uploadController from "./controllers/upload";
 import * as uploadUrlController from "./controllers/url-upload";
@@ -15,6 +16,8 @@ import { ApiError } from "./models/error";
 
 const app = express();
 
+cfg.load(__dirname + "/configuration.json", "api");
+
 app.set("port", 3000);
 app.use(morgan(":method :url :status :response-time ms"));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -24,7 +27,7 @@ app.use("/swagger.json", (req: express.Request, res: express.Response) => {
     res.sendFile(__dirname + "/swagger.json");
 });
 
-const upload = multer({dest: "temp/"});
+const upload = multer({dest: cfg.parseAsPath(cfg.get("api").queueFileUploadDir)});
 app.post("/api/upload", upload.single("file"), jsonContentWrangler);
 app.post("/api/login", jsonContentWrangler);
 app.post("/api/url_upload", jsonContentWrangler);

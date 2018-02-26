@@ -1,4 +1,7 @@
+import * as fs from "fs";
+import * as path from "path";
 import * as express from "express";
+import * as cfg from "../configuration";
 import { Get, Post, Route, Body, Tags, Request } from "tsoa";
 import { UploadRequest, UploadResponse, UploadRequestWrapper, UploadProcessingStatus } from "../models/upload";
 import * as Jobs from "../services/jobs";
@@ -14,9 +17,12 @@ export class UploadController {
 			throw new Error("no file upload present");
 		}
 
-
+		const uploadDir = cfg.parseAsPath(cfg.get("api").queueFileUploadDir);
+		const filenameWithExtension = req.file.filename + path.extname(req.file.originalname);
+		fs.renameSync(`${uploadDir}/${req.file.filename}`, `${uploadDir}/${filenameWithExtension}`);
+		
 		const fileInfo: JobFileInfo = {
-			filename: req.file.filename,
+			filename: filenameWithExtension,
 			original_filename: req.file.originalname
 		};
 

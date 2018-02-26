@@ -36,12 +36,12 @@ request-json={"session": "h9sxjywt5mdxg9fmwq6r0pj3epf7ga9w", "url": "http://apod
 ###
 
 # localhost test submission status call
-GET http://localhost:3000/api/submissions/11
+GET http://localhost:3000/api/submissions/15
 
 ###
 
 # localhost test job status call
-GET http://localhost:3000/api/jobs/11
+GET http://localhost:3000/api/jobs/15
 
 ###
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A lite API-only version of astrometry.net, to provide solver functionality via an identical API",
   "scripts": {
-    "build": "npm run clean-dist && npm run tsoa && npm run tsc && npm run cp-swagger-ui",
+    "build": "npm run clean-dist && npm run tsoa && npm run tsc && npm run cp-swagger-ui && npm run cp-files",
     "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TS,Node,TSOA\" -c \"yellow.bold,green.bold,cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\" \"npm run watch-controllers-models\"",
     "serve-dist": "node dist/server.js",
     "tsoa-routes": "tsoa routes",
@@ -13,7 +13,10 @@
     "tsc": "tsc",
     "watch-node": "nodemon dist/server.js",
     "watch-controllers-models": "onchange \"./src/controllers/**/*.ts\" \"./src/models/**/*.ts\" -- npm run tsoa",
+    "cp-files": "npm run cp-swagger-ui && npm run cp-db && npm run cp-conf",
     "cp-swagger-ui": "ncp ./src/swagger-ui ./dist/swagger-ui",
+    "cp-db": "ncp ./database/workdb-template.db ./dist/workdb.db",
+    "cp-conf": "ncp ./src/configuration.json ./dist/configuration.json",
     "clean-dist": "rimraf ./dist",
     "xxtest": "mocha --require ts:ts-node/register \"src/**/*.ts\"",
     "test": "mocha --compilers ts:ts-node/register \"src/**/*.ts\""
@@ -34,6 +37,7 @@
     "valid-url": "1.0.9"
   },
   "devDependencies": {
+    "@types/node": "9.4.6",
     "@types/async": "^2.0.47",
     "@types/express": "^4.11.0",
     "@types/mocha": "2.2.48",
