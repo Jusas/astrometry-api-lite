@@ -2,16 +2,16 @@ import * as sqlite from "sqlite";
 import * as cfg from "../configuration"
 import * as shelljs from "shelljs";
 import * as readline from "readline";
-//import * as cproc from "child_process";
 import { spawn } from "./asyncprocess";
 import * as fs from "fs";
+import * as rimraf from "rimraf";
+import * as path from "path";
 import * as bl from "bl";
 import { JobQueueEntry } from "../common/models/job";
+import { JobProcessingError } from "../common/models/error";
 
-//const spawn = require("await-spawn");
 const datetime = require("node-datetime");
 
-// TODO TODO TODO failed processings, mark processing_state properly.
 export async function processQueueItem() {
 
 	console.log("Checking for a work item...")
@@ -20,8 +20,8 @@ export async function processQueueItem() {
 
 	let db = await sqlite.open(dbFile);
 
-	//let query = "select * from JobQueue where processing_state = 0 order by created";
-	let query = "select * from JobQueue";
+	let query = "select * from JobQueue where processing_state = 0 order by created";
+
 	let result = await db.get(query);
 	let job_id = 0;
 	if(result) {
@@ -38,78 +38,84 @@ export async function processQueueItem() {
 		let queueItem = <JobQueueEntry> await stmt.get(myId);
 		if(queueItem) {
 			console.log("Work item checked out, beginning processing");
-			// start work.
-
-			let tempDir = cfg.parseAsPath(cfg.get("worker").tempDir);
-			if(!tempDir) {
-				tempDir = "/tmp";
-			}
-
-			const outDir = `${tempDir}/${queueItem.id}`;
-			if(!fs.existsSync(outDir)) {
-				shelljs.mkdir("-p", outDir);
-			}
-			const params = buildSolveParams(queueItem, outDir);
 			
-			await spawn("solve-field", params).catch( (err) => { 
-				console.error("Solve-field failed"); // TODO better error logging and reporting
-				throw err;
-			});
+			try
+			{
+				let tempDir = resolveTempDir();
 
-			if(fs.existsSync(`${outDir}/wcs`) && fs.existsSync(`${outDir}/solved`)) {
-
-				console.log("Solve-field solver run completed successfully");
-
-				const wcsTableFile = `${outDir}/wcs-table`;
-				let wcsStream = fs.createWriteStream(wcsTableFile, {flags: "w"});
-				await spawn(`wcsinfo`, [`${outDir}/wcs`], wcsStream).catch( (err) => {
-					console.error("Failed to run wcsinfo on results!");
-					wcsStream.close();
+				const outDir = `${tempDir}/${queueItem.id}`;
+				if(!fs.existsSync(outDir)) {
+					shelljs.mkdir("-p", outDir);
+				}
+				const params = buildSolveParams(queueItem, outDir);
+				
+				await spawn("solve-field", params).catch( (err) => { 					
+					console.error("Solve-field failed");
 					throw err;
 				});
-				wcsStream.close();
-				const wcsTable = fs.readFileSync(wcsTableFile).toString();								
-				const solverResult = wcsTableToJson(wcsTable);
 
-				console.log("WCS list parsed");
-			
-				let update = `update JobQueue set processing_state = 2, processing_finished = ?, result_parity = ?,
-					result_orientation = ?, result_pixscale = ?, result_radius = ?, result_ra = ?, result_dec = ?
-					where id = ${job_id}`;
-				let updateData = [
-					datetime.create().now()
-				];
+				if(fs.existsSync(`${outDir}/wcs`) && fs.existsSync(`${outDir}/solved`)) {
 
-				updateData.push(solverResult.parity ? solverResult.parity : null);
-				updateData.push(solverResult.orientation ? solverResult.orientation : null);
-				updateData.push(solverResult.pixscale ? solverResult.pixscale : null);
-				if(solverResult.imagew && solverResult.imageh && solverResult.pixscale) {
-					updateData.push(calcRadius(solverResult.imagew, solverResult.imageh, solverResult.pixscale));
+					console.log("Solve-field solver run completed successfully");
+
+					const wcsTableFile = `${outDir}/wcs-table`;
+					let wcsStream = fs.createWriteStream(wcsTableFile, {flags: "w"});
+					await spawn(`wcsinfo`, [`${outDir}/wcs`], wcsStream).catch( (err) => {
+						console.error("Failed to run wcsinfo on results!");
+						wcsStream.close();
+						throw err;
+					});
+					wcsStream.close();
+					const wcsTable = fs.readFileSync(wcsTableFile).toString();								
+					const solverResult = wcsTableToJson(wcsTable);
+
+					console.log("WCS list parsed");
+				
+					let update = `update JobQueue set processing_state = 2, processing_finished = ?, result_parity = ?,
+						result_orientation = ?, result_pixscale = ?, result_radius = ?, result_ra = ?, result_dec = ?
+						where id = ${job_id}`;
+					let updateData = [
+						datetime.create().now()
+					];
+
+					updateData.push(solverResult.parity ? solverResult.parity : null);
+					updateData.push(solverResult.orientation ? solverResult.orientation : null);
+					updateData.push(solverResult.pixscale ? solverResult.pixscale : null);
+					if(solverResult.imagew && solverResult.imageh && solverResult.pixscale) {
+						updateData.push(calcRadius(solverResult.imagew, solverResult.imageh, solverResult.pixscale));
+					}
+					else {
+						updateData.push(null);
+					}
+					updateData.push(solverResult.ra_center ? solverResult.ra_center : null);
+					updateData.push(solverResult.dec_center ? solverResult.dec_center : null);
+
+					console.log("Updating job with results");
+					stmt = await db.prepare(update);
+					stmt.run(updateData).catch( (err) => { 
+						console.error("Failed to update job status");
+						throw err;
+					});
+
+					console.log("Job state and results updated successfully");
 				}
 				else {
-					updateData.push(null);
+					console.error("Solve-field run ended and no valid results exist!");
+					throw new JobProcessingError("could not find result files", []);
 				}
-				updateData.push(solverResult.ra_center ? solverResult.ra_center : null);
-				updateData.push(solverResult.dec_center ? solverResult.dec_center : null);
-
-				console.log("Updating job with results");
-				stmt = await db.prepare(update);
-				stmt.run(updateData).catch( (err) => { 
-					console.error("Failed to update job status");
-					throw err;
-				});
-				// TODO the update failed, the job will remain in queue to be retried - should probably eliminate the possibility of infinite failure.
-
-				console.log("Job state and results updated successfully");
-
-
 			}
-			else {
-				console.error("Solve-field run ended and no valid results exist!");
+			catch(err) {
+				let update = `update JobQueue set processing_state = 3, error_text = ? where id = ${job_id}`;
+				let stmt = await db.prepare(update);
+				await stmt.run(JSON.stringify(err));
+				console.log("Job marked as failure, error information updated");
 			}
-
+			finally {
+				cleanUpTemp(job_id);
+			}
 
 		}
+		
 
 	}
 	else {
@@ -127,7 +133,7 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 		timeLimit = 200;
 	}
 	if(!uploadDir) {
-		throw Error("file upload directory not defined");
+		throw new JobProcessingError("file upload directory not defined in configuration, unable to find work files", []);
 	}
 
 	params.push(...["-p"]);
@@ -193,6 +199,22 @@ function wcsTableToJson(buf: string): any {
 	return json;
 }
 
-function calcRadius(imagew: number, imageh: number, pixscale: number) {
+function calcRadius(imagew: number, imageh: number, pixscale: number): number {
 	return Math.sqrt((imagew * imagew) + (imageh * imageh)) * pixscale / 2 / 3600;
+}
+
+function cleanUpTemp(id: number) {
+	let workDir = path.join(resolveTempDir(), `${id}`);
+	if(fs.existsSync(workDir)) {
+		console.log("Cleaning up " + workDir);
+		rimraf.sync(workDir, {disableGlob: true})
+	}
+}
+
+function resolveTempDir(): string {
+	let tempDir = cfg.parseAsPath(cfg.get("worker").tempDir);
+	if(!tempDir) {
+		tempDir = "/tmp";
+	}
+	return tempDir;
 }

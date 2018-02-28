@@ -1,5 +1,6 @@
 import * as cproc from "child_process";
 import { WriteStream } from "fs";
+import { JobProcessingError } from "../common/models/error";
 const BufferList = require("bl")
 
 export let spawn = (command: string, args: string[], stdoutStream?: WriteStream, stderrStream?: WriteStream) => {
@@ -24,9 +25,10 @@ export let spawn = (command: string, args: string[], stdoutStream?: WriteStream,
   }
 
   const promise = new Promise<any>((resolve, reject) => {
+    
     child.on("error", (reason) => {
-      console.error("Child process error: " + reason);
-      reject(reason);
+      console.error("Child process error: ", reason);
+      reject(new JobProcessingError(reason.message, bl));
     });
 
     child.on("exit", (code) => {
@@ -34,12 +36,10 @@ export let spawn = (command: string, args: string[], stdoutStream?: WriteStream,
         resolve(bl)
       } else {
         console.error(`Child process exited with code ${code}`);
-        //console.error(`Stdout buffer:`);
-        //console.error(bl.toString());
-        reject(new Error(`child exited with code ${code}`))
+        reject(new JobProcessingError(`child exited with code ${code}`, bl));
       }
-    })
-  })
+    });
+  });
 
 
   return promise;
