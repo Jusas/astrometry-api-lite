@@ -4,6 +4,7 @@ import * as datetime from "node-datetime";
 import { SubmissionInfoResponse } from "../models/submission";
 import * as Jobs from "../services/jobs";
 import { ProcessingState } from "../models/job";
+import { ApiError } from "../models/error";
 
 
 @Route("api/submissions")
@@ -15,7 +16,9 @@ export class SubmissionsController {
   @Get("{id}")
   async get (id: number): Promise<SubmissionInfoResponse> {
     const status = await Jobs.getStatus(id);
-
+    if(!status) {
+      throw new ApiError("submission not found", 404);
+    }
     let started = <any>status.processing_started;
     let finished = <any>status.processing_finished;
     started = started ? datetime.create(started).format("Y-m-d H:M:S.NZ") : "None";

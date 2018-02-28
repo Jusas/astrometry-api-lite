@@ -16,28 +16,30 @@ export class JobsController {
   @Get("{id}")
   async get (id: number): Promise<JobStatusResponse> {
     const status = await Jobs.getStatus(id);
-
-		let state = JobStatusResponseStatus.none;
-		switch(status.processing_state) {
-			case ProcessingState.Queued:
-				state = JobStatusResponseStatus.none;
-				break;
-			case ProcessingState.Processing:
-				state = JobStatusResponseStatus.solving;
-				break;
-			case ProcessingState.Succeeded:
-				state = JobStatusResponseStatus.success;
-				break;
-			case ProcessingState.Failed:
-				state = JobStatusResponseStatus.failure;
-				break;
-		}
+	if(!status) {
+		throw new ApiError("Job not found", 404)
+	}
+	let state = JobStatusResponseStatus.none;
+	switch(status.processing_state) {
+		case ProcessingState.Queued:
+			state = JobStatusResponseStatus.none;
+			break;
+		case ProcessingState.Processing:
+			state = JobStatusResponseStatus.solving;
+			break;
+		case ProcessingState.Succeeded:
+			state = JobStatusResponseStatus.success;
+			break;
+		case ProcessingState.Failed:
+			state = JobStatusResponseStatus.failure;
+			break;
+	}
 		
     const result: JobStatusResponse = {
       status: state
     }
     return result;
-	}
+}
 	
 	@Get("{id}/calibration")
 	async getCalibration (id: number): Promise<JobCalibrationResponse> {

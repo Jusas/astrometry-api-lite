@@ -21,6 +21,17 @@
                 "dist/config-worker.json"
             ],
             "cwd": "${workspaceFolder}/worker"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch manager",
+            "program": "${workspaceFolder}/worker/dist/manager/main.js",
+            "args": [
+                "-c",
+                "dist/config-manager.json"
+            ],
+            "cwd": "${workspaceFolder}/worker"
         }
     ]
 }

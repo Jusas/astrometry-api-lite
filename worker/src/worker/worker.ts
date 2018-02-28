@@ -2,7 +2,7 @@ import * as sqlite from "sqlite";
 import * as cfg from "../configuration"
 import * as shelljs from "shelljs";
 import * as readline from "readline";
-import { spawn } from "./asyncprocess";
+import { spawn } from "../common/asyncprocess";
 import * as fs from "fs";
 import * as rimraf from "rimraf";
 import * as path from "path";
@@ -19,23 +19,32 @@ export async function processQueueItem() {
 	const myId = cfg.get("worker-id");	
 
 	let db = await sqlite.open(dbFile);
-
 	let query = "select * from JobQueue where processing_state = 0 order by created";
-
 	let result = await db.get(query);
+	await db.close();
+
 	let job_id = 0;
 	if(result) {
 
 		job_id = result.id;
 		console.log(`Found a work item (id ${job_id}), attempting to checkout`)
-		
+
+		let db = await sqlite.open(dbFile);
+		await db.run("PRAGMA journal_mode = WAL;");
+
 		let update = `update JobQueue set processing_state = 1, worker_id = ? where id = ${result.id}`;
 		let stmt = await db.prepare(update);
 		await stmt.run(myId);
+		await stmt.finalize();
+		//await db.close();
 
+		//db = await sqlite.open(dbFile);
 		query = `select * from JobQueue where id = ${job_id} and worker_id = ?`;
 		stmt = await db.prepare(query);
 		let queueItem = <JobQueueEntry> await stmt.get(myId);
+		await stmt.finalize();
+		//await db.close();
+
 		if(queueItem) {
 			console.log("Work item checked out, beginning processing");
 			
@@ -91,11 +100,15 @@ export async function processQueueItem() {
 					updateData.push(solverResult.dec_center ? solverResult.dec_center : null);
 
 					console.log("Updating job with results");
+					//db = await sqlite.open(dbFile);
 					stmt = await db.prepare(update);
-					stmt.run(updateData).catch( (err) => { 
+					// TODO all promise rejections
+					await stmt.run(updateData).catch( (err) => { 
 						console.error("Failed to update job status");
 						throw err;
 					});
+					await stmt.finalize();
+					//await db.close();
 
 					console.log("Job state and results updated successfully");
 				}
@@ -105,12 +118,16 @@ export async function processQueueItem() {
 				}
 			}
 			catch(err) {
+				//db = await sqlite.open(dbFile);
 				let update = `update JobQueue set processing_state = 3, error_text = ? where id = ${job_id}`;
 				let stmt = await db.prepare(update);
 				await stmt.run(JSON.stringify(err));
+				await stmt.finalize();
+				//await db.close();
 				console.log("Job marked as failure, error information updated");
 			}
 			finally {
+				await db.close();
 				cleanUpTemp(job_id);
 			}
 
@@ -189,10 +206,21 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 function wcsTableToJson(buf: string): any {
 	let json = {};
 	let lines = buf.split("\n");
+	console.log("WCS table has " + lines.length + " lines");
+	if(lines.length == 0) {
+		console.log("WARNING! WCS table does not have newlines!");
+		console.log(buf);
+	}
 	lines.map( (line) => {
 		let keyValue = line.split(/\s+/);
 		if(keyValue.length == 2) {
 			json[keyValue[0]] = keyValue[1];
+			console.log("VAL: " + keyValue[0] + " = " + keyValue[1]);
+		}
+		else {
+			console.log("WARNING: arr len is not 2:");
+			console.log(line);
+			fs.writeFileSync("/tmp/error." + Math.random(), buf);
 		}
 	});
 	console.log("json is now: " + JSON.stringify(json));

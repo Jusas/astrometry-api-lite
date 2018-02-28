@@ -15,6 +15,7 @@ export async function queue(fileInfo: JobFileInfo, parameters: JobParams): Promi
 
 	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
+	await db.run("PRAGMA journal_mode = WAL;");
 
 	let insertStatement = `INSERT INTO JobQueue (created, processing_state, filename, original_filename, url`;
 	let s = [];
@@ -65,20 +66,24 @@ export async function getStatus(id: number): Promise<JobStatus> {
 
 	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
+	await db.run("PRAGMA journal_mode = WAL;");
 	
 	let query = "SELECT processing_started, processing_finished, processing_state FROM JobQueue WHERE id = ?";
 	var stmt = await db.prepare(query);
 	let res = await stmt.get(id);
+	stmt.finalize();
+	db.close();
 
+
+	if(!res) {
+		return null;
+	}
 	var result: JobStatus = {
 		id: id,
 		processing_started: res.processing_started || null,
 		processing_finished: res.processing_finished || null,
 		processing_state: res.processing_state
 	}
-	
-	stmt.finalize();
-	db.close();
 
 	return result;
 }
@@ -87,12 +92,16 @@ export async function getCalibrationData(id: number): Promise<JobCalibrationResu
 	
 	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
+	await db.run("PRAGMA journal_mode = WAL;");
 	
 	let query = `SELECT result_parity, result_orientation, result_pixscale, 
 		result_radius, result_ra, result_dec FROM JobQueue WHERE id = ?`;
 
 	var stmt = await db.prepare(query);
 	let res = <JobCalibrationResultData> await stmt.get(id);
+	stmt.finalize();
+	db.close();
+
 	if(!res)
 		return null;
 	return res;
@@ -103,9 +112,13 @@ export async function getFullData(id: number): Promise<JobQueueEntry> {
 	
 	let dbFile = cfg.parseAsPath(cfg.get("api").database);
 	var db = await sqlite.open(dbFile);
+	await db.run("PRAGMA journal_mode = WAL;");
 	let query = `SELECT * FROM JobQueue WHERE id = ?`;
 	var stmt = await db.prepare(query);
 	let res = <JobQueueEntry> await stmt.get(id);
+	stmt.finalize();
+	db.close();
+
 	if(!res)
 		return null;
 	return res;

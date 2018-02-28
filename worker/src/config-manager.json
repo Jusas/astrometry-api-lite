@@ -1,4 +1,6 @@
 {
-	"database": "../../api/dist/workdb.db",
+	"database": "../api/dist/workdb.db",
+	"worker": "dist/worker/main.js",
+	"workerConfig": "dist/config-worker.json",
 	"maxConcurrentWorkers": 2
 }
