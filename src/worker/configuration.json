@@ -1,0 +1,6 @@
+{
+	"database": "dist/workdb.db",
+	"queueFileUploadDir": "/tmp/astrometry-queue",
+	"tempDir": "/tmp/astrometry-temp",
+	"computationTimeLimit": 300
+}

@@ -1,0 +1,15 @@
+{
+    "swagger": {
+        "outputDirectory": "./dist/api",
+        "entryFile": "./src/api/server.ts",
+        "host": "localhost:3000",
+        "basePath": "/"
+    },
+    "routes": {
+        "basePath": "/",
+        "entryFile": "./src/api/server.ts",
+        "routesDir": "./src/api/generated/routes",
+        "middleware": "express",
+        "middlewareTemplate": "./src/api/tsoa/route-template.tpl"
+    }
+}

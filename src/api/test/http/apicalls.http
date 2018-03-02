@@ -1,0 +1,121 @@
+# Localhost login call
+POST http://localhost:3000/api/login
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"apikey": "iczikaqstszeptgs"}
+
+###
+
+# Localhost upload test call
+
+POST http://localhost:3000/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="request-json"
+Content-Type: application/text/plain
+MIME-Version: 1.0
+
+{"downsample_factor": 2, "publicly_visible": "y", "allow_modifications": "d", "session": "no-session", "allow_commercial_use": "d"}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: application/octet-stream
+MIME-Version: 1.0
+
+< ../data/ngc7331.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# localhost test url upload call
+POST http://localhost:3000/api/url_upload
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"session": "h9sxjywt5mdxg9fmwq6r0pj3epf7ga9w", "url": "http://apod.nasa.gov/apod/image/1206/ldn673s_block1123.jpg", "scale_units": "degwidth", "scale_lower": 0.5, "scale_upper": 1.0, "center_ra": 290, "center_dec": 11, "radius": 2.0 }
+
+###
+
+# localhost test submission status call
+GET http://localhost:3000/api/submissions/28
+
+###
+
+# localhost test job status call
+GET http://localhost:3000/api/jobs/28
+
+###
+
+# Astrometry.net test job calibration result call
+GET http://localhost:3000/api/jobs/15/calibration/
+
+###
+
+# Astrometry.net test login call
+POST http://nova.astrometry.net/api/login
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"apikey": "iczikaqstszeptgs"}
+
+###
+
+# Astrometry.net test file upload call
+POST http://nova.astrometry.net/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="request-json"
+MIME-Version: 1.0
+
+{"publicly_visible": "y", "allow_modifications": "d", "session": "rcvxvkum98jmvzcz4ammvx5btb59fzr0", "allow_commercial_use": "d"}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: application/octet-stream
+MIME-Version: 1.0
+
+< ../data/ngc7331.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+###
+
+# Astrometry.net test url upload call
+POST http://nova.astrometry.net/api/url_upload
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"session": "h9sxjywt5mdxg9fmwq6r0pj3epf7ga9w", "url": "http://oldweb.aao.gov.au/images/image/aat115.jpg" }
+
+
+
+###
+
+# Astrometry.net test submission status call
+GET http://nova.astrometry.net/api/submissions/1943343
+
+###
+
+# Astrometry.net test job status call
+GET http://nova.astrometry.net/api/jobs/2443894
+
+
+###
+
+# Astrometry.net test url upload call
+POST http://nova.astrometry.net/api/url_upload
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"session": "h9sxjywt5mdxg9fmwq6r0pj3epf7ga9w", "url": "http://apod.nasa.gov/apod/image/1206/ldn673s_block1123.jpg", "scale_units": "degwidth", "scale_lower": 0.5, "scale_upper": 1.0, "center_ra": 290, "center_dec": 11, "radius": 2.0 }
+
+
+
+
+###
+
+# Astrometry.net test job calibration result call
+GET http://nova.astrometry.net/api/jobs/5463345535345/calibration/
+
+
+###
+
+# Astrometry.net test job results info call
+GET http://nova.astrometry.net/api/jobs/2443894/info
+

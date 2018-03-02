@@ -1,0 +1,5 @@
+{
+	"database": "dist/workdb.db",
+	"queueFileUploadDir": "/tmp/astrometry-queue",
+	"apiPort": 3000
+}
