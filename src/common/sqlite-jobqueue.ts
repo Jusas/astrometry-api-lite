@@ -15,7 +15,6 @@ export class SqliteJobQueue {
 
     private async ensureOpen(): Promise<void> {
         if(!this.db) {
-            console.log("opening database");
             this.db = await sqlite.open(this.dbFile);
             await this.db.run("PRAGMA journal_mode = DEL;");
             this.db.on("close", () => {
