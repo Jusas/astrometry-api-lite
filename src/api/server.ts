@@ -41,6 +41,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: NextFuncti
     else {
         res.status(500);
     }    
+    console.log(err);
     res.json({
         message: err.message
     });

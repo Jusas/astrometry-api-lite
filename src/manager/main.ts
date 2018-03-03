@@ -8,18 +8,6 @@ import { configuration } from "../common/configuration";
 
 let activeWorkers: RunningProcess[] = [];
 
-const argsDefinition = [
-	{
-		name: "config-file",
-		alias: "c",
-		type: String
-	}
-];
-
-const opts = args(argsDefinition);
-let pollTimer = null;
-let statusTimer = null;
-
 async function run() {
 
     const config = configuration();

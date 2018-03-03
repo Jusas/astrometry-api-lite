@@ -18,6 +18,8 @@ export async function getRecommendedWorkerCount(): Promise<number> {
 	const q = new SqliteJobQueue(dbFile);
 	
 	let count = await q.countUnprocessedAndProcessing(-1);
+	await q.release();
+	
 	if(count == 0) {
 		return 0;
 	}

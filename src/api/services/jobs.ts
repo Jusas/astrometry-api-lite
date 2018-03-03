@@ -16,7 +16,7 @@ export async function queue(fileInfo: JobFileInfo, parameters: JobParams): Promi
 	const q = new SqliteJobQueue(dbFile);
 
 	const itemId = await q.createWorkItem(parameters, fileInfo, 10);
-
+	await q.release();
 	if(itemId == -1) {
 		throw new ApiError("Could not create a new work item into queue", 500);
 	}
@@ -34,6 +34,7 @@ export async function getStatus(id: number): Promise<JobStatus> {
 	const q = new SqliteJobQueue(dbFile);
 		
 	const item = await q.getWorkItem(id, 10);
+	await q.release();
 	if(!item) {
 		throw new ApiError("Work item not found", 404);
 	}
@@ -54,6 +55,7 @@ export async function getCalibrationData(id: number): Promise<JobCalibrationResu
 	const q = new SqliteJobQueue(dbFile);
 	
 	const item = await q.getWorkItem(id, 10);
+	await q.release();
 	if(!item) {
 		throw new ApiError("Work item not found", 404);
 	}
@@ -75,6 +77,8 @@ export async function getFullData(id: number): Promise<JobQueueEntry> {
 	const q = new SqliteJobQueue(dbFile);
 	
 	const item = await q.getWorkItem(id, 10);
+	await q.release();
+
 	if(!item) {
 		throw new ApiError("Work item not found", 404);
 	}

@@ -15,11 +15,19 @@ export class SqliteJobQueue {
 
     private async ensureOpen(): Promise<void> {
         if(!this.db) {
+            console.log("opening database");
             this.db = await sqlite.open(this.dbFile);
-            await this.db.run("PRAGMA journal_mode = WAL;");
+            await this.db.run("PRAGMA journal_mode = DEL;");
             this.db.on("close", () => {
                 this.db = null;
             });
+        }
+    }
+
+    public async release(): Promise<void> {
+        if(this.db) {
+            await this.db.close();
+            this.db = null;
         }
     }
 
@@ -61,7 +69,7 @@ export class SqliteJobQueue {
                     error = err;
                 }
                 if(keepTrying) {
-                    await this.waitSecs(waitSec);
+                    await this.waitSecs(waitSec * 1.5);
                 }
             }
         }
@@ -101,7 +109,7 @@ export class SqliteJobQueue {
     }
 
     public async createWorkItem(params: JobParams, fileInfo: JobFileInfo, maxRetries: number = -1) : Promise<number> {
-        
+
         const result = await this.resilientDbOp( async () => {
             let insert = "insert into JobQueue (created, processing_state, filename, original_filename, url";
             let s = [];
@@ -135,6 +143,7 @@ export class SqliteJobQueue {
 
             const stmt = await this.db.prepare(insert);
             const res = await stmt.run(values);
+            await res.finalize();
             
             return res.lastID;
         }, maxRetries, true).catch( (err) => {
@@ -197,6 +206,7 @@ export class SqliteJobQueue {
             const stmt = await this.db.prepare(`update JobQueue set processing_state = 3, 
                 processing_finished = ?, error_text = ? where id = ${itemId}`);
             await stmt.run(updateData);
+            await stmt.finalize();
         }, maxRetries, true).catch( (err) => {
             console.log("Unable to set work result as failure for job " + itemId);
             throw new JobProcessingError("Job result saving as failure has failed for job " + itemId, []);
@@ -207,7 +217,8 @@ export class SqliteJobQueue {
 
         const result = await this.resilientDbOp( async() => {
             const stmt = await this.db.prepare(`select * from JobQueue where id = ?`);
-            const item = await stmt.get(id);            
+            const item = await stmt.get(id);      
+            await stmt.finalize();      
             return item;
         }, maxRetries, false).catch( (err) => {
             console.log("Could not get work item id " + id);

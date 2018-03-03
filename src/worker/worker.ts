@@ -28,6 +28,8 @@ export async function processQueueItem() {
 		return;
 	}
 
+	await q.release();
+
 	const job_id = workItem.id;
 
 	console.log("Checked out work item " + job_id);
@@ -99,6 +101,7 @@ export async function processQueueItem() {
 	}
 	finally {
 		cleanUpTemp(job_id);
+		await q.release();
 	}
 
 
@@ -184,8 +187,6 @@ function wcsTableToJson(buf: string): any {
 		}
 		else {
 			console.log("WARNING: arr len is not 2:");
-			console.log(line);
-			fs.writeFileSync("/tmp/error." + Math.random(), buf);
 		}
 	});
 	console.log("json is now: " + JSON.stringify(json));
@@ -197,11 +198,11 @@ function calcRadius(imagew: number, imageh: number, pixscale: number): number {
 }
 
 function cleanUpTemp(id: number) {
-	// let workDir = path.join(resolveTempDir(), `${id}`);
-	// if(fs.existsSync(workDir)) {
-	// 	console.log("Cleaning up " + workDir);
-	// 	rimraf.sync(workDir, {disableGlob: true})
-	// }
+	let workDir = path.join(resolveTempDir(), `${id}`);
+	if(fs.existsSync(workDir)) {
+		console.log("Cleaning up " + workDir);
+		rimraf.sync(workDir, {disableGlob: true})
+	}
 }
 
 function resolveTempDir(): string {
