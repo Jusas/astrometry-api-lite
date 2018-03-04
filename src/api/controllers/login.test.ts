@@ -9,7 +9,7 @@ describe("post", async () => {
                 apikey: "somekey"
             }
         };
-        const res = await LoginController.prototype.post(req);
+        const res = await LoginController.prototype.postLogin(req);
         assert.equal(res.status, "success");
     });
 });

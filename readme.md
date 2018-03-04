@@ -4,7 +4,7 @@ A lite version of the Astrometry.net Nova API built with node.js. Its purpose is
 
 [Skip straight to installation instructions.](#installation)
 
-A test API is set up at http://astro-api.b5p.org if you wish to give it a spin (don't use it for "production" purposes, the computing resources aren't very high and no service is guaranteed).
+A test API is set up at http://astro-api.b5p.org if you wish to give it a spin ([swagger UI available](http://astro-api.b5p.org/swagger), note that from the swagger UI you can only use url upload, regular upload lacks UI). Don't use it for "production" purposes, the computing resources aren't very high and no service is guaranteed.
 
 ## Why?
 

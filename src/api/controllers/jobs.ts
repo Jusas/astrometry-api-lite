@@ -14,7 +14,7 @@ export class JobsController {
 	 * @isInt id
 	 */
   @Get("{id}")
-  async get (id: number): Promise<JobStatusResponse> {
+  async getJob (id: number): Promise<JobStatusResponse> {
     const status = await Jobs.getStatus(id);
 	if(!status) {
 		throw new ApiError("Job not found", 404)

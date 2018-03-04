@@ -10,7 +10,7 @@
     "api:copy-conf": "copyfiles -u 1 \"./src/api/*.json\" \"./dist\"",
     "api:develop": "npm run api:build && concurrently -k -p \"[{name}]\" -n \"TS,Server,Swagger\" -c \"yellow.bold,green.bold,cyan.bold\" \"npm run api:tsc-watcher\" \"npm run api:server-watcher\" \"npm run api:swagger-watcher\"",
     "api:server-watcher": "nodemon dist/api/server.js",
-    "api:swagger": "ncp ./src/api/swagger-ui ./dist/swagger-ui",
+    "api:swagger": "ncp ./src/api/swagger-ui ./dist/api/swagger-ui",
     "api:swagger-watcher": "onchange \"./src/api/controllers/**/*.ts\" \"./src/common/models/**/*.ts\" -- npm run api:tsoa",
     "api:ts-watcher": "tsc -p tsconfig.api.json --watch",
     "api:tsc": "tsc -p tsconfig.api.json",

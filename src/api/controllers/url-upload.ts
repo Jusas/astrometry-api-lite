@@ -9,7 +9,7 @@ import * as urlValidation from "valid-url";
 export class UrlUploadController {
 
   @Post()
-  async post (@Body() model: UrlUploadRequestWrapper): Promise<UploadResponse> {		
+  async postUploadUrl (@Body() model: UrlUploadRequestWrapper): Promise<UploadResponse> {		
 				
 		const u = model["request-json"].url;
 		if(!urlValidation.isHttpsUri(u) && !urlValidation.isHttpUri(u)) {

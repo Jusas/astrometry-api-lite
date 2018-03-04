@@ -19,6 +19,16 @@ const models: TsoaRoute.Models = {
             "session": { "dataType": "string", "required": true },
         },
     },
+    "LoginRequest": {
+        "properties": {
+            "apikey": { "dataType": "string", "required": true },
+        },
+    },
+    "LoginRequestWrapper": {
+        "properties": {
+            "request-json": { "ref": "LoginRequest", "required": true },
+        },
+    },
     "UploadProcessingStatus": {
         "enums": ["success", "error"],
     },
@@ -139,7 +149,7 @@ export function RegisterRoutes(app: any) {
     app.post('/api/login',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
-                req: { "in": "body", "name": "req", "required": true, "dataType": "any" },
+                req: { "in": "body", "name": "req", "required": true, "ref": "LoginRequestWrapper" },
             };
 
             let validatedArgs: any[] = [];
@@ -150,7 +160,7 @@ export function RegisterRoutes(app: any) {
             }
 
             const controller = new LoginController();
-            const promise = controller.post.apply(controller, validatedArgs);
+            const promise = controller.postLogin.apply(controller, validatedArgs);
             promiseHandler(controller, promise, response, next);
         })
     );
@@ -169,7 +179,7 @@ export function RegisterRoutes(app: any) {
             }
 
             const controller = new UploadController();
-            const promise = controller.post.apply(controller, validatedArgs);
+            const promise = controller.postUpload.apply(controller, validatedArgs);
             promiseHandler(controller, promise, response, next);
         })
     );
@@ -187,7 +197,7 @@ export function RegisterRoutes(app: any) {
             }
 
             const controller = new UrlUploadController();
-            const promise = controller.post.apply(controller, validatedArgs);
+            const promise = controller.postUploadUrl.apply(controller, validatedArgs);
             promiseHandler(controller, promise, response, next);
         })
     );
@@ -223,7 +233,7 @@ export function RegisterRoutes(app: any) {
             }
 
             const controller = new JobsController();
-            const promise = controller.get.apply(controller, validatedArgs);
+            const promise = controller.getJob.apply(controller, validatedArgs);
             promiseHandler(controller, promise, response, next);
         })
     );

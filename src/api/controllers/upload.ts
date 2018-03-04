@@ -11,7 +11,7 @@ import { JobFileInfo } from "../../common/models/job";
 export class UploadController {
 
   @Post()
-  async post (@Body() model: UploadRequestWrapper, @Request() req: express.Request): Promise<UploadResponse> {		
+  async postUpload (@Body() model: UploadRequestWrapper, @Request() req: express.Request): Promise<UploadResponse> {		
 				
 		if(!req.file || !req.file.filename) {
 			throw new Error("no file upload present");

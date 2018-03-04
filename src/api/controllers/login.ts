@@ -6,7 +6,7 @@ import { LoginRequest, LoginResponse, LoginRequestWrapper } from "../models/logi
 export class LoginController {
 
   @Post()
-  async post (@Body() req: any): Promise<LoginResponse> {
+  async postLogin (@Body() req: LoginRequestWrapper): Promise<LoginResponse> {
     const res: LoginResponse = {
 			status: "success",
 			message: "authentication not implemented, request ignored",
