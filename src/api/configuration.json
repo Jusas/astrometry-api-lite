@@ -1,5 +1,6 @@
 {
 	"database": "dist/workdb.db",
 	"queueFileUploadDir": "/tmp/astrometry-queue",
-	"apiPort": 80
+	"apiPort": 8080,
+	"enableSwagger": true
 }

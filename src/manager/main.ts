@@ -13,8 +13,8 @@ async function run() {
     console.log("Manager started");
 
     setInterval( async () => {
-        //let recommendedCount = await mgr.getRecommendedWorkerCount().catch( (err) => { throw err } );
         let queueCount = await mgr.getQueuedItemCount().catch( (err) => { throw err } );
+        //console.log("QUEUE COUNT " + queueCount);
         if(activeWorkers.length < maxWorkerCount && queueCount > 0) {
             let instance = mgr.spawnWorkerInstance();
             activeWorkers.push(instance);
@@ -30,10 +30,10 @@ async function run() {
                 .then(promiseHandler, promiseHandler)
                 .catch(promiseHandler);            
         }        
-    }, 300);
+    }, 200);
 
     setInterval(() => console.log(`Worker manager is still alive, active/max worker count: ${activeWorkers.length}/${maxWorkerCount}`), 
-        60000);
+        300000);
     
 }
 

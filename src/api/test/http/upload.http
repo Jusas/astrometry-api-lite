@@ -1,0 +1,39 @@
+# LOCALHOST upload
+
+POST http://localhost:3000/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="request-json"
+Content-Type: application/text/plain
+MIME-Version: 1.0
+
+{"downsample_factor": 2, "publicly_visible": "y", "allow_modifications": "d", "session": "no-session", "allow_commercial_use": "d"}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: application/octet-stream
+MIME-Version: 1.0
+
+< ../data/ngc7331.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# ASTROMETRY.NET upload
+
+POST http://nova.astrometry.net/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="request-json"
+Content-Type: application/text/plain
+MIME-Version: 1.0
+
+{"downsample_factor": 2, "publicly_visible": "y", "allow_modifications": "d", "session": "xxx", "allow_commercial_use": "d"}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: application/octet-stream
+MIME-Version: 1.0
+
+< ../data/ngc7331.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--

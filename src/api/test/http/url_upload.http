@@ -1,0 +1,14 @@
+# LOCALHOST url upload
+POST http://localhost:3000/api/url_upload
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"session": "xxx", "url": "https://i.imgur.com/gAl5Wsw.jpg", "downsample_factor": 2 }
+
+###
+
+# ASTROMETRY.NET url upload
+POST http://nova.astrometry.net/api/url_upload
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"session": "xxx", "url": "https://i.imgur.com/gAl5Wsw.jpg", "downsample_factor": 2 }
+

@@ -42,9 +42,15 @@ export async function processQueueItem() {
 		if(!fs.existsSync(outDir)) {
 			shelljs.mkdir("-p", outDir);
 		}
+
+		if(workItem.url) {
+			const tempFilename = await fetch(workItem.url, outDir);
+			workItem.filename = tempFilename;
+		}
+
 		const params = buildSolveParams(workItem, outDir);
 		
-		await spawn("solve-field", params).catch( (err) => { 					
+		await spawn("solve-field", params).catch( (err) => {
 			console.error("Solve-field failed");
 			throw err;
 		});
@@ -107,6 +113,15 @@ export async function processQueueItem() {
 
 }
 
+async function fetch(url: string, outDir: string): Promise<string> {
+	const file = path.join(outDir, "web-file");
+	await spawn("curl", ["-o", file, url]).catch( (err) => {
+		console.error(`Failed to get url '${url}'`);
+		throw err;
+	});
+	return file;
+}
+
 function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<string> {
 	
 	const config = configuration();
@@ -166,7 +181,12 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 		params.push(...["--pixel-error", queueEntry.p_positional_error]);
 	}
 	
-	params.push(`${uploadDir}/${queueEntry.filename}`);
+	if(queueEntry.url) {
+		params.push(queueEntry.filename);
+	}
+	else {
+		params.push(`${uploadDir}/${queueEntry.filename}`);
+	}
 
 	return params;
 }

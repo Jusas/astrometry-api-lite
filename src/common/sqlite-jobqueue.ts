@@ -59,10 +59,15 @@ export class SqliteJobQueue {
                 }
                 keepTrying = false;
             }
-            catch(err) {                
+            catch(err) {
+                
                 if(transaction) {
-                    await this.db.run("commit");
+                    try {
+                        await this.db.run("commit");
+                    }
+                    catch {}
                 }
+                
                 if(maxRetries >= 0 && tries > maxRetries) {
                     keepTrying = false;
                     error = err;

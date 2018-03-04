@@ -22,10 +22,12 @@ app.set("port", config.apiPort);
 app.use(morgan(":method :url :status :response-time ms"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use("/swagger", express.static(__dirname + "/swagger-ui"));
-app.use("/swagger.json", (req: express.Request, res: express.Response) => {
-    res.sendFile(__dirname + "/swagger.json");
-});
+if(config.enableSwagger) {
+    app.use("/swagger", express.static(__dirname + "/swagger-ui"));
+    app.use("/swagger.json", (req: express.Request, res: express.Response) => {
+        res.sendFile(__dirname + "/swagger.json");
+    });
+}
 
 const upload = multer({dest: config.queueFileUploadDir});
 app.post("/api/upload", upload.single("file"), jsonContentWrangler);

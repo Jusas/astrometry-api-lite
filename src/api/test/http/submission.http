@@ -1,0 +1,9 @@
+# LOCALHOST submissions
+GET http://localhost:3000/api/submissions/15
+
+
+###
+
+# ASTROMETRY.NET submissions
+GET http://nova.astrometry.net/api/submissions/1943343
+

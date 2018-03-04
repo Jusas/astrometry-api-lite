@@ -7,6 +7,7 @@ export interface JobQueueEntry extends JobCalibrationResultData {
 	worker_id: string,
 	filename: string,
 	original_filename: string,
+	url: string,
 	error_id: string,
 	error_text: string,
 	p_scale_units: string,

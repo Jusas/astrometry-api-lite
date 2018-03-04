@@ -1,0 +1,27 @@
+# LOCALHOST job
+GET http://localhost:3000/api/jobs/15
+
+###
+
+# ASTROMETRY.NET job
+GET http://nova.astrometry.net/api/jobs/2443894
+
+###
+
+# LOCALHOST job info
+GET http://localhost:3000/api/jobs/15/info
+
+###
+
+# ASTROMETRY.NET job info
+GET http://nova.astrometry.net/api/jobs/2443894/info
+
+###
+
+# LOCALHOST job calibration
+GET http://localhost:3000/api/jobs/15/calibration/
+
+###
+
+# ASTROMETRY.NET job calibration
+GET http://nova.astrometry.net/api/jobs/2443894/calibration/
