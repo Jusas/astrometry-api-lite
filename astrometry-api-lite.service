@@ -1,0 +1,17 @@
+[Unit]
+Description=Astrometry.net lite API
+
+[Service]
+Restart=always
+RestartSec=10
+WorkingDirectory=/opt/astrometry-api-lite
+ExecStart=/usr/bin/node /opt/astrometry-api-lite/dist/api/server.js
+TimeoutStopSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=astrometry-api-lite
+Environment=AAPI_LITE_ENV=local
+User=vmadmin
+
+[Install]
+WantedBy=multi-user.target

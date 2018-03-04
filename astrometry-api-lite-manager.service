@@ -1,0 +1,16 @@
+[Unit]
+Description=Astrometry.net lite API worker manager
+
+[Service]
+Restart=always
+RestartSec=10
+WorkingDirectory=/opt/astrometry-api-lite
+ExecStart=/usr/bin/node /opt/astrometry-api-lite/dist/manager/main.js
+TimeoutStopSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=astrometry-api-lite-mgr
+User=vmadmin
+
+[Install]
+WantedBy=multi-user.target
