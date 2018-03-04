@@ -3,8 +3,6 @@ import * as mgr from "./manager";
 import { RunningProcess } from "../common/models/runningProcess";
 import { configuration } from "../common/configuration";
 
-// run the queue query in loop, and maintain process pool.
-// If we have less then max processes running and getRecommendedWorkerCount has higher count than what's running, start a process.
 
 let activeWorkers: RunningProcess[] = [];
 
@@ -15,8 +13,9 @@ async function run() {
     console.log("Manager started");
 
     setInterval( async () => {
-        let wc = await mgr.getRecommendedWorkerCount().catch( (err) => { throw err } );
-        if(activeWorkers.length < wc) {
+        //let recommendedCount = await mgr.getRecommendedWorkerCount().catch( (err) => { throw err } );
+        let queueCount = await mgr.getQueuedItemCount().catch( (err) => { throw err } );
+        if(activeWorkers.length < maxWorkerCount && queueCount > 0) {
             let instance = mgr.spawnWorkerInstance();
             activeWorkers.push(instance);
             console.log(`Active worker count: ${activeWorkers.length}/${maxWorkerCount}`);

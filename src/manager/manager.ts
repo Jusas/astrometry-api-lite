@@ -17,7 +17,7 @@ export async function getRecommendedWorkerCount(): Promise<number> {
 
 	const q = new SqliteJobQueue(dbFile);
 	
-	let count = await q.countUnprocessedAndProcessing(-1);
+	let count = await q.countUnprocessedAndProcessing(-1);	
 	await q.release();
 	
 	if(count == 0) {
@@ -25,6 +25,19 @@ export async function getRecommendedWorkerCount(): Promise<number> {
 	}
 
 	count = count > config.maxConcurrentWorkers ? config.maxConcurrentWorkers : count;
+	return count;
+}
+
+export async function getQueuedItemCount(): Promise<number> {
+	
+	const config = configuration();
+	let dbFile = config.database;
+
+	const q = new SqliteJobQueue(dbFile);
+	
+	let count = await q.countUnprocessed(-1);	
+	await q.release();
+	
 	return count;
 }
 

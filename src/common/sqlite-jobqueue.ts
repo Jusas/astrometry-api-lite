@@ -49,6 +49,7 @@ export class SqliteJobQueue {
 
         while(keepTrying) {
             try {
+                tries += 1;
                 if(transaction) {
                     await this.db.run("begin immediate");
                 }
@@ -58,8 +59,7 @@ export class SqliteJobQueue {
                 }
                 keepTrying = false;
             }
-            catch(err) {
-                tries += 1;
+            catch(err) {                
                 if(transaction) {
                     await this.db.run("commit");
                 }
@@ -76,11 +76,12 @@ export class SqliteJobQueue {
         if(error) {
             console.error("Error with db operation: ", error);
             await this.db.close();
-        }
-
-        if(result == null && tries > maxRetries) {
             throw new JobProcessingError(`Resilient db op failed after ${tries} tries`, []);
         }
+
+        // if(result == null && tries > maxRetries) {
+        //     throw new JobProcessingError(`Resilient db op failed after ${tries} tries`, []);
+        // }
 
         return result;
     }
@@ -168,7 +169,7 @@ export class SqliteJobQueue {
         }, maxRetries, true).catch( (err) => {
             console.log("Unable to pop an item from queue", err);
         });
-        return result || -1;     
+        return result || null;     
     }
 
     public async saveWorkItemResult(itemId: number, resultData: JobCalibrationResultData, maxRetries: number = -1) : Promise<void> {
