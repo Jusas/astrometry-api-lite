@@ -95,13 +95,14 @@ node dist/worker/main.js
 
 ### Install as service
 
+If you're running this on native Linux (ie. NOT Windows 10 Subsystem for Linux) you can install this as a service.
 This will depend on what your Linux distro is of course, but here's an example how to do it in Ubuntu:
 
 In this repo you can find the files:
 - astrometry-api-lite.service
 - astrometry-api-lite-manager.service
 
-Modify the `WorkingDirectory` and `ExecStart` directories to match your installation directory. Also make sure the `User` is set to the user you wish to run the service with (and that user should also have the proper rights to the installation directory). Then copy the files under /etc/systemd/system:
+Modify the `WorkingDirectory` and `ExecStart` directories to match your installation directory. Also make sure the `User` is set to the user you wish to run the service with (and that user should also have the proper rights to the installation directory). Then copy the files under /etc/systemd/system, enable the services and start them:
 
 ```
 sudo cp astrometry-api-lite*.service /etc/systemd/system
@@ -161,6 +162,10 @@ will load `configuration.local.json` file instead.
 | queueFileUploadDir | the path where uploaded files are stored |
 | tempDir | the path where (temporary) result files produced by the solver are stored |
 | computationTimeLimit | the time limit for the solver, jobs that last longer will be aborted |
+| skipJobsOlderThanSeconds | the worker will abandon jobs that are older than this value in seconds (useful if the API has piled up jobs but the manager has been down, you don't want to start solving old jobs) |
+| storeObjsImages | true or false, whether or not you want to store the resulting object images for each job. Stores them in the job database in base64 format. |
+| storeNgcImages | true or false, whether or not you want to store the resulting NGC (annotation) images for each job. Stores them in the job database in base64 format. |
+| imageScale | Image scaling to apply to the saved images (if you want to save space) |
 
 ### Data storage
 
@@ -172,7 +177,7 @@ No cleanup duties are being performed for the database. It's important to note t
 
 The basic need is to be able to run Node.js applications and the astrometry.net solver. If you can do those, you've got what you need.
 
+__NOTE:__ It's important to note that __Debian based distributions will not have any NGC objects in their annotations__ if you've installed astrometry.net from their packages; this is due to the non-commercial license requirements to use those object catalogs, and Debian has had to remove that data - you'll probably need to jump through some hoops and compile astrometry.net yourself if you want them in.
+
 This has been tested in both **Windows 10 Subsystem for Linux** and in **Ubuntu 16.04**.
-
-
 

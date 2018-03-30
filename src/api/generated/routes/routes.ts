@@ -152,6 +152,8 @@ const models: TsoaRoute.Models = {
             "result_radius": { "dataType": "double", "required": true },
             "result_ra": { "dataType": "double", "required": true },
             "result_dec": { "dataType": "double", "required": true },
+            "img_objs": { "dataType": "string", "required": true },
+            "img_ngc": { "dataType": "string", "required": true },
             "id": { "dataType": "double", "required": true },
             "created": { "dataType": "double", "required": true },
             "processing_state": { "dataType": "double", "required": true },

@@ -1,6 +1,6 @@
 import * as sqlite from "sqlite";
 import { JobProcessingError } from "./models/error";
-import { JobQueueEntry, JobCalibrationResultData, JobFileInfo } from "./models/job";
+import { JobQueueEntry, JobCalibrationResultData, JobFileInfo, JobCalibrationResultWithOutputImages } from "./models/job";
 import { JobParams } from "./models/job";
 const datetime = require("node-datetime");
 
@@ -177,7 +177,7 @@ export class SqliteJobQueue {
         return result || null;     
     }
 
-    public async saveWorkItemResult(itemId: number, resultData: JobCalibrationResultData, maxRetries: number = -1) : Promise<void> {
+    public async saveWorkItemResult(itemId: number, resultData: JobCalibrationResultWithOutputImages, maxRetries: number = -1) : Promise<void> {
         
         await this.resilientDbOp( async () => {
             
@@ -188,10 +188,13 @@ export class SqliteJobQueue {
                 resultData.result_parity,
                 resultData.result_pixscale,
                 resultData.result_ra,
-                resultData.result_radius
+                resultData.result_radius,
+                resultData.img_ngc,
+                resultData.img_objs
             ];
             const stmt = await this.db.prepare(`update JobQueue set processing_state = 2, processing_finished = ?, result_dec = ?,
-                result_orientation = ?, result_parity = ?, result_pixscale = ?, result_ra = ?, result_radius = ?
+                result_orientation = ?, result_parity = ?, result_pixscale = ?, result_ra = ?, result_radius = ?,
+                img_ngc = ?, img_objs = ?
                 where id = ${itemId}`);
             await stmt.run(updateData);
             await stmt.finalize();

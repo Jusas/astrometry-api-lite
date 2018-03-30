@@ -2,5 +2,9 @@
 	"database": "dist/workdb.db",
 	"queueFileUploadDir": "/tmp/astrometry-queue",
 	"tempDir": "/tmp/astrometry-temp",
-	"computationTimeLimit": 300
+	"computationTimeLimit": 300,
+	"skipJobsOlderThanSeconds": 900,
+	"storeObjsImages": true,
+	"storeNgcImages": true,
+	"imageScale": 0.5
 }

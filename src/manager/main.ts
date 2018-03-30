@@ -30,7 +30,7 @@ async function run() {
                 .then(promiseHandler, promiseHandler)
                 .catch(promiseHandler);            
         }        
-    }, 200);
+    }, 500);
 
     setInterval(() => console.log(`Worker manager is still alive, active/max worker count: ${activeWorkers.length}/${maxWorkerCount}`), 
         300000);

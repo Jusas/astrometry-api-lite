@@ -1,4 +1,4 @@
-export interface JobQueueEntry extends JobCalibrationResultData {
+export interface JobQueueEntry extends JobCalibrationResultWithOutputImages {
 	id: number,
 	created: number,
 	processing_state: number,
@@ -25,6 +25,11 @@ export interface JobQueueEntry extends JobCalibrationResultData {
 	p_parity: number,
 	p_positional_error: number
 
+}
+
+export interface JobCalibrationResultWithOutputImages extends JobCalibrationResultData {
+	img_objs: string,
+	img_ngc: string
 }
 
 export interface JobCalibrationResultData {

@@ -7,7 +7,8 @@ import * as fs from "fs";
 import * as rimraf from "rimraf";
 import * as path from "path";
 import * as bl from "bl";
-import { JobQueueEntry, JobCalibrationResultData } from "../common/models/job";
+import * as jimp from "jimp";
+import { JobQueueEntry, JobCalibrationResultData, JobCalibrationResultWithOutputImages } from "../common/models/job";
 import { JobProcessingError } from "../common/models/error";
 import { SqliteJobQueue } from "../common/sqlite-jobqueue";
 
@@ -19,6 +20,9 @@ export async function processQueueItem() {
 	const config = configuration();
 	const dbFile = config.database;
 	const myId = config["worker-id"];
+	const saveObjImg = config["storeObjsImages"];
+	const saveNgcImg = config["storeNgcImages"];
+	const imgScaling = config["imageScale"];
 
 	const q = new SqliteJobQueue(dbFile);
 
@@ -36,6 +40,15 @@ export async function processQueueItem() {
 
 	try
 	{
+		// All jobs older than 15 minutes will be abandoned.
+		const expirationMs = config["skipJobsOlderThanSeconds"] * 1000;
+		const now = datetime.create().now();
+		if(now - workItem.created > expirationMs) {
+			console.log(`Work item is older than ${expirationMs/1000/60} minutes, skipping and marking as failure.`);
+			await q.trySetWorkItemFailed(job_id, "job expired", 10);
+			return;
+		}
+
 		let tempDir = resolveTempDir();
 
 		const outDir = `${tempDir}/${job_id}`;
@@ -76,7 +89,33 @@ export async function processQueueItem() {
 
 			console.log("WCS list parsed");
 
-			const updateData: JobCalibrationResultData = {
+			let objImage = "";
+			let ngcImage = "";
+
+			if(saveObjImg) {
+				try {
+					console.log("Processing output object image...")
+					const f = `${workItem.id}-objs.png`;
+					objImage = await resizeAndConvertToBase64(`${outDir}/${f}`, imgScaling);
+					console.log("Done, object image length: " + objImage.length);
+				}
+				catch(err) {
+					console.log("Failed to convert/resize object image", err);
+				}
+			}
+			if(saveNgcImg) {
+				try {
+					console.log("Processing output NGC image...")
+					const f = `${workItem.id}-ngc.png`;
+					ngcImage = await resizeAndConvertToBase64(`${outDir}/${f}`, imgScaling);
+					console.log("Done, NGC image length: " + ngcImage.length);
+				}
+				catch(err) {
+					console.log("Failed to convert/resize NGC image", err);
+				}
+			}
+
+			const updateData: JobCalibrationResultWithOutputImages = {
 				result_dec: solverResult.dec_center ? solverResult.dec_center : null,
 				result_orientation: solverResult.orientation ? solverResult.orientation : null,
 				result_parity: solverResult.parity ? solverResult.parity : null,
@@ -84,7 +123,9 @@ export async function processQueueItem() {
 				result_ra: solverResult.ra_center ? solverResult.ra_center : null,
 				result_radius: solverResult.imagew && solverResult.imageh && solverResult.pixscale
 					? calcRadius(solverResult.imagew, solverResult.imageh, solverResult.pixscale)
-					: null
+					: null,
+				img_ngc: ngcImage,
+				img_objs: objImage
 			};
 
 			console.log("Updating job with results");
@@ -106,7 +147,7 @@ export async function processQueueItem() {
 		}				
 	}
 	finally {
-		cleanUpTemp(job_id);
+		cleanUpTemp(workItem);
 		await q.release();
 	}
 
@@ -120,6 +161,30 @@ async function fetch(url: string, outDir: string): Promise<string> {
 		throw err;
 	});
 	return file;
+}
+
+async function resizeAndConvertToBase64(filePath: string, scale: number): Promise<string> {
+	const p = new Promise<string>( (resolve, reject) => {
+		jimp.read(filePath, (err, img) => {
+			if(err) {
+				reject(err);
+			}
+			else {
+				img.scale(scale, jimp.RESIZE_BILINEAR)
+					.quality(65)
+					.getBase64("image/jpeg", (err, data) => {
+						if(err) {
+							reject(err);
+						}
+						else {
+							resolve(data);
+						}
+					});
+			}
+		});
+
+	});
+	return await p;
 }
 
 function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<string> {
@@ -136,13 +201,8 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 		throw new JobProcessingError("file upload directory not defined in configuration, unable to find work files", []);
 	}
 
-	params.push(...["-p"]);
-	params.push(...["-R", "none"]);
-	params.push(...["-M", "none"]);
-	params.push(...["-B", "none"]);
-	params.push(...["-U", "none"]);
-	params.push(...["-N", "none"]);
-	params.push(...["--temp-axy"]);
+	params.push(...["-D", `${outDir}`]);
+	params.push(...["-o", `${queueEntry.id}`]);
 	params.push(...["--wcs", `${outDir}/wcs`]);
 	params.push(...["-S", `${outDir}/solved`]);
 	params.push(...["-l", `${timeLimit}`]);
@@ -217,18 +277,31 @@ function calcRadius(imagew: number, imageh: number, pixscale: number): number {
 	return Math.sqrt((imagew * imagew) + (imageh * imageh)) * pixscale / 2 / 3600;
 }
 
-function cleanUpTemp(id: number) {
-	let workDir = path.join(resolveTempDir(), `${id}`);
+function cleanUpTemp(workItem: JobQueueEntry) {
+	let workDir = path.join(resolveTempDir(), `${workItem.id}`);
+	let uploadDir = resolveTempUploadDir();
 	if(fs.existsSync(workDir)) {
 		console.log("Cleaning up " + workDir);
 		rimraf.sync(workDir, {disableGlob: true})
+	}
+	let uploadImage = path.join(uploadDir, workItem.filename);
+	if(fs.existsSync(uploadImage)) {
+		fs.unlinkSync(uploadImage);
 	}
 }
 
 function resolveTempDir(): string {
 	let tempDir = configuration().tempDir;
 	if(!tempDir) {
-		tempDir = "/tmp";
+		tempDir = "/tmp/astrometry-temp";
+	}
+	return tempDir;
+}
+
+function resolveTempUploadDir(): string {
+	let tempDir = configuration().queueFileUploadDir;
+	if(!tempDir) {
+		tempDir = "/tmp/astrometry-temp";
 	}
 	return tempDir;
 }
