@@ -7,6 +7,7 @@ import { UploadController } from './../../controllers/upload';
 import { UrlUploadController } from './../../controllers/url-upload';
 import { SubmissionsController } from './../../controllers/submissions';
 import { JobsController } from './../../controllers/jobs';
+import { StatsController } from './../../controllers/stats';
 
 import { asyncErrorHandler } from '../../middleware/error-handler';
 
@@ -143,6 +144,53 @@ const models: TsoaRoute.Models = {
             "objects_in_field": { "dataType": "array", "array": { "dataType": "string" }, "required": true },
         },
     },
+    "JobQueueEntry": {
+        "properties": {
+            "result_parity": { "dataType": "double", "required": true },
+            "result_orientation": { "dataType": "double", "required": true },
+            "result_pixscale": { "dataType": "double", "required": true },
+            "result_radius": { "dataType": "double", "required": true },
+            "result_ra": { "dataType": "double", "required": true },
+            "result_dec": { "dataType": "double", "required": true },
+            "id": { "dataType": "double", "required": true },
+            "created": { "dataType": "double", "required": true },
+            "processing_state": { "dataType": "double", "required": true },
+            "processing_finished": { "dataType": "double", "required": true },
+            "processing_started": { "dataType": "double", "required": true },
+            "worker_id": { "dataType": "string", "required": true },
+            "filename": { "dataType": "string", "required": true },
+            "original_filename": { "dataType": "string", "required": true },
+            "url": { "dataType": "string", "required": true },
+            "error_id": { "dataType": "string", "required": true },
+            "error_text": { "dataType": "string", "required": true },
+            "p_scale_units": { "dataType": "string", "required": true },
+            "p_scale_type": { "dataType": "string", "required": true },
+            "p_scale_lower": { "dataType": "double", "required": true },
+            "p_scale_upper": { "dataType": "double", "required": true },
+            "p_scale_est": { "dataType": "double", "required": true },
+            "p_scale_err": { "dataType": "double", "required": true },
+            "p_center_ra": { "dataType": "double", "required": true },
+            "p_center_dec": { "dataType": "double", "required": true },
+            "p_radius": { "dataType": "double", "required": true },
+            "p_downsample_factor": { "dataType": "double", "required": true },
+            "p_tweak_order": { "dataType": "double", "required": true },
+            "p_crpix_center": { "dataType": "double", "required": true },
+            "p_parity": { "dataType": "double", "required": true },
+            "p_positional_error": { "dataType": "double", "required": true },
+        },
+    },
+    "WorkerState": {
+        "properties": {
+            "pid": { "dataType": "double", "required": true },
+            "cpu": { "dataType": "double", "required": true },
+        },
+    },
+    "WorkerSystemState": {
+        "properties": {
+            "workerManagerRunning": { "dataType": "boolean", "required": true },
+            "activeWorkers": { "dataType": "array", "array": { "ref": "WorkerState" }, "required": true },
+        },
+    },
 };
 
 export function RegisterRoutes(app: any) {
@@ -270,6 +318,40 @@ export function RegisterRoutes(app: any) {
 
             const controller = new JobsController();
             const promise = controller.getInfo.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.get('/api/stats/latest',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new StatsController();
+            const promise = controller.getLatestJobs.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.get('/api/stats/workers',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new StatsController();
+            const promise = controller.getWorkerStates.apply(controller, validatedArgs);
             promiseHandler(controller, promise, response, next);
         })
     );

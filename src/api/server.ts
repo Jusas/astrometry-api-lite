@@ -8,6 +8,7 @@ import * as uploadController from "./controllers/upload";
 import * as uploadUrlController from "./controllers/url-upload";
 import * as submissionsController from "./controllers/submissions";
 import * as jobsController from "./controllers/jobs";
+import * as statsController from "./controllers/stats";
 import { RegisterRoutes } from "./generated/routes/routes";
 import { NextFunction } from "express-serve-static-core";
 import { asyncErrorHandler } from "./middleware/error-handler";
@@ -50,7 +51,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: NextFuncti
 });
 
 const server = app.listen(app.get("port"), () => {
-    console.log("Running");
+    console.log("Running, port " + app.get("port"));
 });
 
 export = server;

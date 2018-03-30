@@ -230,4 +230,16 @@ export class SqliteJobQueue {
         });
         return result || null;
     }
+
+    public async getLatestWorkItems(count: number, maxRetries: number = -1): Promise<JobQueueEntry[]> {
+        const result = await this.resilientDbOp( async() => {
+            const stmt = await this.db.prepare(`select * from JobQueue order by created desc limit ?`);
+            const items = await stmt.all(count);
+            await stmt.finalize();
+            return items;
+        }, maxRetries, false).catch( (err) => {
+            console.log("Could not get latest work items");
+        });
+        return result || null;
+    }
 }

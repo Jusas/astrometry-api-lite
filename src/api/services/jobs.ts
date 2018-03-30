@@ -86,3 +86,14 @@ export async function getFullData(id: number): Promise<JobQueueEntry> {
 	return item;
 	
 }
+
+export async function getLatestJobs(count: number): Promise<JobQueueEntry[]> {
+		
+	let dbFile = configuration().database;
+	const q = new SqliteJobQueue(dbFile);
+	
+	const items = await q.getLatestWorkItems(count, 10);
+	await q.release();
+
+	return items;
+}
