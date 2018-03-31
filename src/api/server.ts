@@ -9,6 +9,8 @@ import * as uploadUrlController from "./controllers/url-upload";
 import * as submissionsController from "./controllers/submissions";
 import * as jobsController from "./controllers/jobs";
 import * as statsController from "./controllers/stats";
+import * as resultImagesController from "./controllers/result-images";
+import * as jobcontrolController from "./controllers/jobcontrol";
 import { RegisterRoutes } from "./generated/routes/routes";
 import { NextFunction } from "express-serve-static-core";
 import { asyncErrorHandler } from "./middleware/error-handler";
@@ -29,13 +31,24 @@ if(config.enableSwagger) {
         res.sendFile(__dirname + "/swagger.json");
     });
 }
+if(config.enableDashboard) {
+    app.use("/dashboard", express.static(__dirname + "/dashboard"));
+}
 
 const upload = multer({dest: config.queueFileUploadDir});
 app.post("/api/upload", upload.single("file"), jsonContentWrangler);
 app.post("/api/login", jsonContentWrangler);
 app.post("/api/url_upload", jsonContentWrangler);
 
+if(!config.enableJobCancellationApi) {
+    app.use(/\/api\/job-control/, (req: express.Request, res: express.Response) => {
+        res.status(403);
+        res.json({status: "unauthorized"});
+    });
+}
+
 RegisterRoutes(app);
+
 
 app.use((err: any, req: express.Request, res: express.Response, next: NextFunction) => {
     if(err instanceof ApiError) {

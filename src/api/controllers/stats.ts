@@ -5,8 +5,10 @@ import { SubmissionInfoResponse } from "../models/submission";
 import * as Jobs from "../services/jobs";
 import { ProcessingState } from "../models/job";
 import { ApiError } from "../models/error";
-import { JobQueueEntry } from "../../common/models/job";
+import { JobQueueEntry, JobQueueEntryWithThumbs } from "../../common/models/job";
 import { WorkerState, WorkerSystemState } from "../models/workerstates";
+import { configuration } from "../../common/configuration";
+import { ApiSupports } from "../models/supports";
 const psList = require("ps-list");
 
 let lastStatusRequest = 0;
@@ -18,8 +20,21 @@ let cachedWorkerSystemState: WorkerSystemState = {
 @Route("api/stats")
 export class StatsController {
 
+	@Get("supports")
+	async getSupportData (): Promise<ApiSupports> {
+		let supports: ApiSupports = {
+			jobCancellationSupported: false
+		};
+		const config = configuration();
+		console.log("config", config);
+		if(config["enableJobCancellationApi"]) {
+			supports.jobCancellationSupported = true;
+		}
+		return supports;
+	}
+
   @Get("latest")
-  async getLatestJobs (): Promise<JobQueueEntry[]> {
+  async getLatestJobs (): Promise<JobQueueEntryWithThumbs[]> {
     const latestJobs = await Jobs.getLatestJobs(20);
 		return latestJobs;
 	}

@@ -3,7 +3,7 @@ import { WriteStream } from "fs";
 import { JobProcessingError } from "../common/models/error";
 const BufferList = require("bl")
 
-export let spawn = (command: string, args: string[], stdoutStream?: WriteStream, stderrStream?: WriteStream) => {
+export let spawn = (command: string, args: string[], cancellationCheckFn?: () => Promise<boolean>, stdoutStream?: WriteStream, stderrStream?: WriteStream) => {
   const child = cproc.spawn(command, args);
   const bl: string[] = [];
 
@@ -26,12 +26,30 @@ export let spawn = (command: string, args: string[], stdoutStream?: WriteStream,
 
   const promise = new Promise<any>((resolve, reject) => {
     
+    let intervalRun = null;
+    if(cancellationCheckFn) {
+      intervalRun = setInterval( () => {
+        cancellationCheckFn().then(value => {
+          if(!value) {
+            console.log("Cancellation requested, killing the process");
+            child.kill();
+          }
+        }).catch();
+      }, 1000);
+    }
+
     child.on("error", (reason) => {
+      if(intervalRun) {
+        clearInterval(intervalRun);
+      }
       console.error("Child process error: ", reason);
       reject(new JobProcessingError(reason.message, bl));
     });
 
     child.on("exit", (code) => {
+      if(intervalRun) {
+        clearInterval(intervalRun);
+      }
       if (code === 0) {
         resolve(bl);
       } else {

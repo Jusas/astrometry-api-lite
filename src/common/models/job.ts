@@ -1,4 +1,4 @@
-export interface JobQueueEntry extends JobCalibrationResultWithOutputImages {
+export interface JobQueueEntry extends JobCalibrationResultData {
 	id: number,
 	created: number,
 	processing_state: number,
@@ -23,13 +23,14 @@ export interface JobQueueEntry extends JobCalibrationResultWithOutputImages {
 	p_tweak_order: number,
 	p_crpix_center: number,
 	p_parity: number,
-	p_positional_error: number
+	p_positional_error: number,
+	cancel_requested: number
 
 }
 
-export interface JobCalibrationResultWithOutputImages extends JobCalibrationResultData {
-	img_objs: string,
-	img_ngc: string
+export interface JobQueueEntryWithThumbs extends JobQueueEntry {
+	img_objs_thumb: string,
+	img_ngc_thumb: string
 }
 
 export interface JobCalibrationResultData {
@@ -41,6 +42,17 @@ export interface JobCalibrationResultData {
 	result_dec: number
 }
 
+export enum ResultImageType {
+	ObjectsImage,
+	ObjectsImageThumb,
+	NgcImage,
+	NgcImageThumb
+} 
+export interface JobResultImageData {
+	job_id: number,
+	img_type: ResultImageType,
+	data: string
+}
 
 export interface JobParams {
 	scale_units?: ScaleUnits,

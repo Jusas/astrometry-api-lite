@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>astrometry-api-lite dashboard</title>
+		<link href="bootstrap.min.css" rel="stylesheet">
+		<script src="jquery.js"></script>
+		<script src="bootstrap.bundle.min.js"></script>
+		<script src="vue.js"></script>
+		<script src="axios.js"></script>
+		
+		<style>
+			.jobtable {
+				margin-top: 1em;
+			}
+
+			.jobtable td {
+				padding: 0.5em 1em 0.5em 0em;
+				font-size: 0.85em;
+			}
+
+			.jobtable td:nth-child(1) {
+				padding-left: 0.25em;
+			}
+
+			.jobtable tr:nth-child(even) {
+				background: #fafafa;
+			}
+
+			.jobtable tr:nth-child(odd) {
+				background: #fff;
+			}
+			.jobtable thead {
+				border-bottom: 1px solid #ccc;
+			}
+
+			.jobtable th {
+				padding: 0.5em 1em 0.5em 0em;
+			}
+
+			.datetd {
+				min-width: 150px;
+			}
+
+			.resultThumb {
+				cursor: pointer;
+				max-width: 80px;
+			}
+
+			.s-queued {
+				color: cadetblue;
+				font-weight: bold;
+			}
+			.s-processing {
+				color: yellowgreen;
+				font-weight: bold;
+			}
+			.s-success {
+				color: forestgreen;
+				font-weight: bold;
+			}
+			.s-failed {
+				color: firebrick;
+				font-weight: bold;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<div class="modal fade" tabindex="-1" role="dialog" id="thumbModal">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Image</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<img :src="downloadedImage">
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="container">
+				<h1>Astrometry-api-lite</h1>
+				<hr/>
+			</div>
+			<div class="container">
+				<h3>Status</h3>
+				<table>
+					<tr>
+						<td style="min-width:150px">Manager:</td>
+						<td>
+							<b style="color:green" v-if="status.workerManagerRunning">RUNNING</b>
+							<b style="color:red" v-else>DOWN</b>
+						</td>
+					</tr>
+					<tr>
+						<td>Workers active:</td><td>{{status.activeWorkers.length}}</td>
+					</tr>
+				</table>
+				<hr/>
+			</div>
+			<div class="container">
+				<h3>Latest jobs</h3>
+				<table class="jobtable">
+					<thead>
+						<th>Id</th>
+						<th>Created</th>
+						<th>State</th>
+						<th>Started</th>
+						<th>Ended</th>
+						<th>Duration</th>
+						<th>Orientation</th>
+						<th>Pixscale</th>
+						<th>Radius</th>
+						<th>Ra</th>
+						<th>Dec</th>
+						<th>Objects</th>
+						<th>Annotated</th>
+					</thead>
+					<tbody>
+						<tr v-for="job in latestJobs">
+							<td>{{job.id}}</td>
+							<td class="datetd">{{makeDate(job.created)}}</td>
+							<td style="min-width:9em">
+								<span v-if="job.processing_state == 0" class="s-queued">QUEUED <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span></span>
+								<span v-if="job.processing_state == 1" class="s-processing">PROCESSING <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span></span>
+								<span v-if="job.processing_state == 2" class="s-success">SUCCESS</span>
+								<span v-if="job.processing_state == 3" class="s-failed">FAILED</span>
+							</td>
+							<td class="datetd">{{makeDate(job.processing_started)}}</td>
+							<td class="datetd">{{makeDate(job.processing_finished)}}</td>
+							<td>{{job.processing_finished && job.processing_started ? makeTimespan(job.processing_finished - job.processing_started) : '-'}}</td>
+							<td>{{job.processing_state == 2 ? job.result_orientation : '-'}}</td>
+							<td>{{job.processing_state == 2 ? job.result_pixscale : '-'}}</td>
+							<td>{{job.processing_state == 2 ? job.result_radius : '-'}}</td>
+							<td>{{job.processing_state == 2 ? job.result_ra : '-'}}</td>
+							<td>{{job.processing_state == 2 ? job.result_dec : '-'}}</td>
+							<td>
+								<div v-if="job.img_objs_thumb">
+									<a v-on:click="triggerThumbModal(job.id, 'objs')">
+										<img :src="job.img_objs_thumb" class="resultThumb">
+									</a>
+								</div>
+							</td>
+							<td>
+								<div v-if="job.img_ngc_thumb">
+									<a v-on:click="triggerThumbModal(job.id, 'ngc')">
+										<img :src="job.img_ngc_thumb" class="resultThumb">
+									</a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<script src="main.js"></script>
+	</body>
+</html>

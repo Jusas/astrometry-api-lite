@@ -8,7 +8,7 @@ import * as rimraf from "rimraf";
 import * as path from "path";
 import * as bl from "bl";
 import * as jimp from "jimp";
-import { JobQueueEntry, JobCalibrationResultData, JobCalibrationResultWithOutputImages } from "../common/models/job";
+import { JobQueueEntry, JobCalibrationResultData, JobResultImageData, ResultImageType } from "../common/models/job";
 import { JobProcessingError } from "../common/models/error";
 import { SqliteJobQueue } from "../common/sqlite-jobqueue";
 
@@ -52,6 +52,9 @@ export async function processQueueItem() {
 		let tempDir = resolveTempDir();
 
 		const outDir = `${tempDir}/${job_id}`;
+
+		cleanUpWorkItemTempDir(outDir);
+
 		if(!fs.existsSync(outDir)) {
 			shelljs.mkdir("-p", outDir);
 		}
@@ -62,8 +65,9 @@ export async function processQueueItem() {
 		}
 
 		const params = buildSolveParams(workItem, outDir);
+
 		
-		await spawn("solve-field", params).catch( (err) => {
+		await spawn("solve-field", params, cancelChecker(workItem.id)).catch( (err) => {
 			console.error("Solve-field failed");
 			throw err;
 		});
@@ -77,7 +81,7 @@ export async function processQueueItem() {
 			const streamPromise = new Promise<void>((resolve, reject) => {
 				wcsStream.on("close", () => resolve());
 			});
-			await spawn(`wcsinfo`, [`${outDir}/wcs`], wcsStream).catch( (err) => {
+			await spawn(`wcsinfo`, [`${outDir}/wcs`], null, wcsStream).catch( (err) => {
 				console.error("Failed to run wcsinfo on results!");
 				wcsStream.close();
 				throw err;
@@ -90,14 +94,16 @@ export async function processQueueItem() {
 			console.log("WCS list parsed");
 
 			let objImage = "";
+			let objImageThumb = "";
 			let ngcImage = "";
+			let ngcImageThumb = "";
 
 			if(saveObjImg) {
 				try {
 					console.log("Processing output object image...")
 					const f = `${workItem.id}-objs.png`;
 					objImage = await resizeAndConvertToBase64(`${outDir}/${f}`, imgScaling);
-					console.log("Done, object image length: " + objImage.length);
+					objImageThumb = await resizeAndConvertToBase64(`${outDir}/${f}`, 0.075);
 				}
 				catch(err) {
 					console.log("Failed to convert/resize object image", err);
@@ -108,14 +114,14 @@ export async function processQueueItem() {
 					console.log("Processing output NGC image...")
 					const f = `${workItem.id}-ngc.png`;
 					ngcImage = await resizeAndConvertToBase64(`${outDir}/${f}`, imgScaling);
-					console.log("Done, NGC image length: " + ngcImage.length);
+					ngcImageThumb = await resizeAndConvertToBase64(`${outDir}/${f}`, 0.075);
 				}
 				catch(err) {
 					console.log("Failed to convert/resize NGC image", err);
 				}
 			}
 
-			const updateData: JobCalibrationResultWithOutputImages = {
+			const updateData: JobCalibrationResultData = {
 				result_dec: solverResult.dec_center ? solverResult.dec_center : null,
 				result_orientation: solverResult.orientation ? solverResult.orientation : null,
 				result_parity: solverResult.parity ? solverResult.parity : null,
@@ -123,14 +129,43 @@ export async function processQueueItem() {
 				result_ra: solverResult.ra_center ? solverResult.ra_center : null,
 				result_radius: solverResult.imagew && solverResult.imageh && solverResult.pixscale
 					? calcRadius(solverResult.imagew, solverResult.imageh, solverResult.pixscale)
-					: null,
-				img_ngc: ngcImage,
-				img_objs: objImage
+					: null
 			};
 
+			const imageDatas = [];
+			if(objImage) {
+				const objImageData: JobResultImageData = {
+					job_id: workItem.id,
+					img_type: ResultImageType.ObjectsImage,
+					data: objImage
+				}
+				const objImageThumbData: JobResultImageData = {
+					job_id: workItem.id,
+					img_type: ResultImageType.ObjectsImageThumb,
+					data: objImageThumb
+				}
+				imageDatas.push(objImageData);
+				imageDatas.push(objImageThumbData);
+			}
+			if(ngcImage) {
+				const ngcImageData: JobResultImageData = {
+					job_id: workItem.id,
+					img_type: ResultImageType.NgcImage,
+					data: ngcImage
+				};				
+				const ngcImageThumbData: JobResultImageData = {
+					job_id: workItem.id,
+					img_type: ResultImageType.NgcImageThumb,
+					data: ngcImageThumb
+				};
+				imageDatas.push(ngcImageData);
+				imageDatas.push(ngcImageThumbData);
+			}
+
 			console.log("Updating job with results");
-			await q.saveWorkItemResult(job_id, updateData, 10);
+			await q.saveWorkItemResult(job_id, updateData, imageDatas, 10);
 			console.log("Job state and results updated successfully");
+
 		}
 		else {
 			console.error("Solve-field run ended and no valid results exist!");
@@ -152,6 +187,35 @@ export async function processQueueItem() {
 	}
 
 
+}
+
+function cancelChecker(id: number): () => Promise<boolean> {
+
+	// Return false if we want to cancel.
+
+	const config = configuration();
+	const dbFile = config.database;
+
+	let fn = () => {
+		const q = new SqliteJobQueue(dbFile);
+		const p = new Promise<boolean>( (resolve, reject) => {
+			q.getWorkItem(id, 10).then( item => {
+				if(item.cancel_requested > 0) {
+					resolve(false);
+				}
+				else {
+					resolve(true);
+				}
+				q.release();
+			}).catch(err => {
+				resolve(true);
+				q.release();
+			});
+		});
+		return p;		
+	};
+
+	return fn;
 }
 
 async function fetch(url: string, outDir: string): Promise<string> {
@@ -287,6 +351,13 @@ function cleanUpTemp(workItem: JobQueueEntry) {
 	let uploadImage = path.join(uploadDir, workItem.filename);
 	if(fs.existsSync(uploadImage)) {
 		fs.unlinkSync(uploadImage);
+	}
+}
+
+function cleanUpWorkItemTempDir(workDir: string) {
+	if(fs.existsSync(workDir)) {
+		console.log("Pre-cleaning up " + workDir);
+		rimraf.sync(workDir, {disableGlob: true})
 	}
 }
 

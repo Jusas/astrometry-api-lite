@@ -1,6 +1,6 @@
 import * as sqlite from "sqlite";
 import { JobProcessingError } from "./models/error";
-import { JobQueueEntry, JobCalibrationResultData, JobFileInfo, JobCalibrationResultWithOutputImages } from "./models/job";
+import { JobQueueEntry, JobCalibrationResultData, JobFileInfo, JobResultImageData, JobQueueEntryWithThumbs, ResultImageType } from "./models/job";
 import { JobParams } from "./models/job";
 const datetime = require("node-datetime");
 
@@ -177,7 +177,7 @@ export class SqliteJobQueue {
         return result || null;     
     }
 
-    public async saveWorkItemResult(itemId: number, resultData: JobCalibrationResultWithOutputImages, maxRetries: number = -1) : Promise<void> {
+    public async saveWorkItemResult(itemId: number, resultData: JobCalibrationResultData, images: JobResultImageData[], maxRetries: number = -1) : Promise<void> {
         
         await this.resilientDbOp( async () => {
             
@@ -188,13 +188,10 @@ export class SqliteJobQueue {
                 resultData.result_parity,
                 resultData.result_pixscale,
                 resultData.result_ra,
-                resultData.result_radius,
-                resultData.img_ngc,
-                resultData.img_objs
+                resultData.result_radius
             ];
             const stmt = await this.db.prepare(`update JobQueue set processing_state = 2, processing_finished = ?, result_dec = ?,
-                result_orientation = ?, result_parity = ?, result_pixscale = ?, result_ra = ?, result_radius = ?,
-                img_ngc = ?, img_objs = ?
+                result_orientation = ?, result_parity = ?, result_pixscale = ?, result_ra = ?, result_radius = ?
                 where id = ${itemId}`);
             await stmt.run(updateData);
             await stmt.finalize();
@@ -202,6 +199,23 @@ export class SqliteJobQueue {
             console.log("Unable to update work result", err);
             throw new JobProcessingError("Job result saving has failed for job " + itemId, []);
         });
+
+        for(let i = 0; i < images.length; i++) {
+            const img = images[i];
+            await this.resilientDbOp( async () => {    
+                const imageInsert = [
+                    img.job_id,
+                    img.img_type,
+                    img.data
+                ];
+                const stmt = await this.db.prepare(`insert into JobResultImages (job_id, img_type, data) values (?, ?, ?)`);
+                await stmt.run(imageInsert);
+                await stmt.finalize();
+            }, maxRetries, true).catch( (err) => {
+                console.log("Failed to save result image(s)", err);
+                throw new JobProcessingError("Job result image saving has failed for job " + itemId, []);
+            });
+        }
     }
 
     public async trySetWorkItemFailed(itemId: number, errorText: string, maxRetries: number = -1) : Promise<void> {
@@ -221,12 +235,23 @@ export class SqliteJobQueue {
         });
     }
 
+    public async trySetWorkItemCanceled(itemId: number, maxRetries: number = -1): Promise<void> {
+        await this.resilientDbOp( async() => {
+            const stmt = await this.db.prepare(`update JobQueue set cancel_requested = 1 where id = ?`);
+            await stmt.run(itemId);
+            await stmt.finalize();
+        }, maxRetries, true).catch( (err) => {
+            console.log("Unable to set cancel_requested for job " + itemId);
+            throw new JobProcessingError("Job canceling failed for job " + itemId, []);
+        });
+    }
+
     public async getWorkItem(id: number, maxRetries: number = -1): Promise<JobQueueEntry> {
 
         const result = await this.resilientDbOp( async() => {
             const stmt = await this.db.prepare(`select * from JobQueue where id = ?`);
-            const item = await stmt.get(id);      
-            await stmt.finalize();      
+            const item = await stmt.get(id);
+            await stmt.finalize();
             return item;
         }, maxRetries, false).catch( (err) => {
             console.log("Could not get work item id " + id);
@@ -234,8 +259,8 @@ export class SqliteJobQueue {
         return result || null;
     }
 
-    public async getLatestWorkItems(count: number, maxRetries: number = -1): Promise<JobQueueEntry[]> {
-        const result = await this.resilientDbOp( async() => {
+    public async getLatestWorkItems(count: number, maxRetries: number = -1): Promise<JobQueueEntryWithThumbs[]> {
+        const result = await this.resilientDbOp( async () => {
             const stmt = await this.db.prepare(`select * from JobQueue order by created desc limit ?`);
             const items = await stmt.all(count);
             await stmt.finalize();
@@ -243,6 +268,45 @@ export class SqliteJobQueue {
         }, maxRetries, false).catch( (err) => {
             console.log("Could not get latest work items");
         });
+
+        // Also get the thumbs of result object and annotation images if they exist.
+        const job_ids = result.map(r => r.id);
+        if(job_ids.length > 0) {
+            const thumbResults = await this.resilientDbOp( async () => {
+                const inClause = job_ids.map(i => "?").join(",");
+                const stmt = await this.db.prepare(`select * from JobResultImages where job_id in (${inClause}) and img_type in (1,3)`);
+                const items = await stmt.all(job_ids);
+                await stmt.finalize();
+                return items;
+            }, maxRetries, false).catch( (err) => {
+                console.log("Could not get thumbnails for work items");
+            });
+
+            thumbResults.forEach(t => {
+                if(t.img_type == ResultImageType.ObjectsImageThumb) {
+                    result.filter(j => j.id == t.job_id).shift().img_objs_thumb = t.data;
+                }
+                if(t.img_type == ResultImageType.NgcImageThumb) {
+                    result.filter(j => j.id == t.job_id).shift().img_ngc_thumb = t.data;
+                }
+            });
+        }
         return result || null;
+    }
+
+    public async getWorkItemResultImage(jobId: number, imgType: ResultImageType, maxRetries: number = -1): Promise<string> {
+        const result = await this.resilientDbOp( async () => {
+            const stmt = await this.db.prepare(`select * from JobResultImages where job_id = ? and img_type = ?`);
+            const item = await stmt.get(jobId, imgType);
+            await stmt.finalize();
+            return item;
+        }, maxRetries, false).catch( (err) => {
+            console.log("Could not get result image");
+        });
+
+        if(result) {
+            return result.data;
+        }
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 import * as sqlite from "sqlite";
 import { CreatedJobEntry, JobStatus } from "../models/job";
-import { JobCalibrationResultData, JobQueueEntry, JobFileInfo, JobParams } from "../../common/models/job";
+import { JobCalibrationResultData, JobQueueEntry, JobFileInfo, JobParams, JobQueueEntryWithThumbs, ResultImageType } from "../../common/models/job";
 import { configuration } from "../../common/configuration";
 import { SqliteJobQueue } from "../../common/sqlite-jobqueue";
 import { ApiError } from "../models/error";
@@ -87,7 +87,7 @@ export async function getFullData(id: number): Promise<JobQueueEntry> {
 	
 }
 
-export async function getLatestJobs(count: number): Promise<JobQueueEntry[]> {
+export async function getLatestJobs(count: number): Promise<JobQueueEntryWithThumbs[]> {
 		
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
@@ -96,4 +96,46 @@ export async function getLatestJobs(count: number): Promise<JobQueueEntry[]> {
 	await q.release();
 
 	return items;
+}
+
+export async function getResultImage(id: number, imgType: ResultImageType): Promise<string> {
+	
+	let dbFile = configuration().database;
+	const q = new SqliteJobQueue(dbFile);
+	
+	const img = await q.getWorkItemResultImage(id, imgType, 10);
+	await q.release();
+
+	return img;
+}
+
+export async function tryCancelJob(id: number): Promise<boolean> {
+
+	let dbFile = configuration().database;
+	const q = new SqliteJobQueue(dbFile);
+	
+	const item = await q.getWorkItem(id, 10);
+	if(item) {
+		let didCancel = false;
+		try {
+			if(item.processing_state == 0) {
+				await q.trySetWorkItemFailed(id, "canceled by request", 10);
+				didCancel = true;
+			}
+			else if(item.processing_state == 1) {
+				await q.trySetWorkItemCanceled(id, 10);
+				didCancel = true;
+			}
+		}
+		catch(err) {
+			didCancel = false;
+		}
+		finally {
+			q.release();
+		}
+		
+		return didCancel;
+	}
+
+	return false;
 }

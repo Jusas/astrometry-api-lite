@@ -8,6 +8,8 @@ import { UrlUploadController } from './../../controllers/url-upload';
 import { SubmissionsController } from './../../controllers/submissions';
 import { JobsController } from './../../controllers/jobs';
 import { StatsController } from './../../controllers/stats';
+import { ResultImageController } from './../../controllers/result-images';
+import { JobControlController } from './../../controllers/jobcontrol';
 
 import { asyncErrorHandler } from '../../middleware/error-handler';
 
@@ -144,7 +146,12 @@ const models: TsoaRoute.Models = {
             "objects_in_field": { "dataType": "array", "array": { "dataType": "string" }, "required": true },
         },
     },
-    "JobQueueEntry": {
+    "ApiSupports": {
+        "properties": {
+            "jobCancellationSupported": { "dataType": "boolean", "required": true },
+        },
+    },
+    "JobQueueEntryWithThumbs": {
         "properties": {
             "result_parity": { "dataType": "double", "required": true },
             "result_orientation": { "dataType": "double", "required": true },
@@ -152,8 +159,6 @@ const models: TsoaRoute.Models = {
             "result_radius": { "dataType": "double", "required": true },
             "result_ra": { "dataType": "double", "required": true },
             "result_dec": { "dataType": "double", "required": true },
-            "img_objs": { "dataType": "string", "required": true },
-            "img_ngc": { "dataType": "string", "required": true },
             "id": { "dataType": "double", "required": true },
             "created": { "dataType": "double", "required": true },
             "processing_state": { "dataType": "double", "required": true },
@@ -179,6 +184,9 @@ const models: TsoaRoute.Models = {
             "p_crpix_center": { "dataType": "double", "required": true },
             "p_parity": { "dataType": "double", "required": true },
             "p_positional_error": { "dataType": "double", "required": true },
+            "cancel_requested": { "dataType": "double", "required": true },
+            "img_objs_thumb": { "dataType": "string", "required": true },
+            "img_ngc_thumb": { "dataType": "string", "required": true },
         },
     },
     "WorkerState": {
@@ -323,6 +331,23 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
+    app.get('/api/stats/supports',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new StatsController();
+            const promise = controller.getSupportData.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
     app.get('/api/stats/latest',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
@@ -354,6 +379,60 @@ export function RegisterRoutes(app: any) {
 
             const controller = new StatsController();
             const promise = controller.getWorkerStates.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.get('/api/result-images/annotation/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new ResultImageController();
+            const promise = controller.getAnnotationImage.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.get('/api/result-images/objects/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new ResultImageController();
+            const promise = controller.getObjectImage.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.get('/api/job-control/cancel/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new JobControlController();
+            const promise = controller.killJob.apply(controller, validatedArgs);
             promiseHandler(controller, promise, response, next);
         })
     );

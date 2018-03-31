@@ -4,7 +4,7 @@ A lite version of the Astrometry.net Nova API built with node.js. Its purpose is
 
 [Skip straight to installation instructions.](#installation)
 
-A test API is set up at http://astro-api.b5p.org if you wish to give it a spin ([swagger UI available](http://astro-api.b5p.org/swagger), note that from the swagger UI you can only use url upload, regular upload lacks UI). Don't use it for "production" purposes, the computing resources aren't very high and no service is guaranteed.
+A test API is set up at http://astro-api.b5p.org if you wish to give it a spin ([swagger UI available](http://astro-api.b5p.org/swagger), note that from the swagger UI you can only use url upload, regular upload lacks UI). Don't use it for "production" purposes, the computing resources aren't very high and no service is guaranteed. It also may not be running the most recent version all the time.
 
 ## Why?
 
@@ -26,7 +26,9 @@ The project is currently composed of three main parts:
 
 ### API
 
-The API implements the following endpoints:
+The job of the API is simply to accept jobs and store them into a queue, and to serve the state of each job upon request. The jobs are stored in an SQLite database.
+
+The API implements the following astrometry.net endpoints:
 
 - /api/login
 - /api/upload
@@ -37,7 +39,35 @@ The API implements the following endpoints:
 - /api/jobs/{id}/info
 - /api/submissions/{id}
 
-The job of the API is simply to accept jobs and store them into a queue, and to serve the state of each job upon request. The jobs are stored in an SQLite database.
+Additionally, the following endpoints are provided for management purposes:
+
+- /api/stats/latest
+- /api/stats/workers
+- /api/stats/supports
+- /api/result-images/annotation/{id}
+- /api/result-images/objects/{id}
+- /api/job-control/cancel/{id}
+
+#### API Dashboard
+
+To provide a bit more transparency, a simple dashboard has been implemented and is accessible at /dashboard. It's useful especially if you're running the API for your own use, and it allows you to cancel jobs if that is enabled from configuration.
+
+The dashboard provides some basic information:
+
+- The manager status (running/down)
+- Active worker count
+- Latest jobs (20 latest job entries) and their information
+- The ability to cancel running and queued jobs if that feature is enabled.
+
+The dashboard can be configured from the __API's configuration.json__, and these values enable/disable the features:
+```
+	"enableDashboard": true,
+	"enableJobCancellationApi": true
+```
+
+If you do not with to use/expose the dashboard, you can disable it via the configuration.
+When the job cancellation API is enabled, canceling jobs via the dashboard and the API is allowed. Useful for personal use, but you probably don't want it enabled if you provide the API for wider use.
+
 
 ### Manager
 
@@ -125,7 +155,7 @@ If you make modifications later on to the files, remember to run `sudo systemctl
 
 ### Configuring
 
-A few configuration values can be set for each application.
+A few configuration values can be set for each application. The defaults may not be what you want, so check them out.
 
 #### dist/api/configuration.json
 
@@ -135,6 +165,8 @@ A few configuration values can be set for each application.
 | queueFileUploadDir | the path where uploaded files are stored |
 | apiPort | which port the API http server uses |
 | enableSwagger | enables or disables the swagger UI, accessible at /swagger |
+| enableDashboard | enables or disables the dashboard at /dashboard |
+| enableJobCancellationApi | enables or disables the job cancellation api, /api/job-control/cancel/{id}. When disabled the control API just returns 403. |
 
 In addition you can use the environment variable `AAPI_LITE_ENV` to load a different configuration file if you want. Ie. calling
 
@@ -170,6 +202,8 @@ will load `configuration.local.json` file instead.
 ### Data storage
 
 All the data (excluding temporary files) is stored in a single table in an SQLite database. This is due to wanting to keep things simple - any other database solution would work just as well, even better, and when moving on to a distributed model where workers do not sit in the same place as the API/manager does a more robust solution will be needed - most likely an SQL server of some kind. 
+
+Saving images (objects/star detection and annotations) from solver can be enabled/disabled from configuration, as explained above. If you have no need for the images and want to save space, just disable storing them.
 
 No cleanup duties are being performed for the database. It's important to note that the database is by its nature "expendable", ie. since the job of the API is to serve requests for the needs of this very moment and not to keep the results for later use, the data is only relevant for a brief moment. Therefore wiping/resetting the database with the template copy (you can find `workdb-template.db` in the sources) should be ok to do at any time.
 
