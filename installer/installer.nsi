@@ -1,15 +1,21 @@
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "nsDialogs.nsh"
+!include "TextFunc.nsh"
 !include "x64.nsh"
 !include "winver.nsh"
 !include "strrep.nsh"
 !include "strcase.nsh"
 !include "linkopen.nsh"
 
+!define VERSION "v1.1.0"
+!define APP_VERSION "Astrometry-api-lite ${VERSION}"
+
 Name "Astrometry-api-lite"
-OutFile "install.exe"
+OutFile "install_${VERSION}.exe"
 InstallDir "C:\astrometry-api-lite"
+
+
 
 RequestExecutionLevel user
 
@@ -75,6 +81,7 @@ Var CfgImageScale_Field
 Var CfgImageScale_Val
 
 Var LinuxInstallDir
+Var InstallSuccess
 
 
 Function CheckInstallStatus
@@ -325,7 +332,7 @@ SectionGroup "Astrometry.net indexes (partly required)" SecIndexes
 	SectionEnd
 SectionGroupEnd
 
-Section "Astrometry-api-lite (latest version)" SecApi
+Section "${APP_VERSION}" SecApi
 SectionEnd
 
 
@@ -514,6 +521,16 @@ Function SaveConfig
 
 FunctionEnd
 
+Function ReadOutcome
+	${If} $9 == "EXITING FROM ERROR"
+		StrCpy $InstallSuccess "false"
+	${Else}
+		StrCpy $InstallSuccess "true"
+	${EndIf}
+	StrCpy $0 StopFileReadFromEnd
+	Push $0
+FunctionEnd
+
 Function RunBashScript
 	${DisableX64FSRedirection}
 	!insertmacro MUI_HEADER_TEXT "Installation script run" ""
@@ -524,21 +541,35 @@ Function RunBashScript
  		Abort
  	${EndIf}
 
-	${NSD_CreateLabel} 0 0 420 70 "The installation script has been run, and the install log has been written to install-log.txt. Shortcut that launches both the manager and the API has been placed to your desktop. Enjoy!"	
-	Pop $0
-	${NSD_CreateLabel} 0 70 420 40 "You can read more about the application and the Dashboard from the readme (doc/readme.html)."
-	Pop $0
-
-	${NSD_CreateLink} 0 125 420 20 "Open readme in browser"
-	Pop $0
-	${NSD_OnClick} $0 onClickReadmeLink
-
 	${NSD_CreateLink} 0 145 420 80 "View install log"
 	Pop $0
 	${NSD_OnClick} $0 onClickLogLink
+	
+	ClearErrors
+	ExecWait '"$WINDIR\System32\bash.exe" -c "cd \"$LinuxInstallDir\" && xargs -a install.args ./install.sh | tee -a install-log.txt"' $1
+	; IfErrors BashError NoBashError ; doesn't seem to work
+	
+	${FileReadFromEnd} "$INSTDIR\install-outcome.txt" "ReadOutcome"
 
-	ExecWait '"$WINDIR\System32\bash.exe" -c "cd \"$LinuxInstallDir\" && xargs -a install.args ./install.sh | tee -a install-log.txt"'
-	CreateShortCut "$DESKTOP\Astrometry-api-lite.lnk" "$WINDIR\System32\bash.exe" "-c $\"cd '$LinuxInstallDir' && node_modules/.bin/concurrently -p '[{name}]' -n 'Jobs,Api' -c 'yellow.bold,green.bold' 'node dist/manager/main.js' 'node dist/api/server.js'$\"" "$INSTDIR\icon.ico"
+
+	${If} $InstallSuccess == "false"
+		${NSD_CreateLabel} 0 0 420 70 "Oh no! The installer reported an error and installation was unsuccessful! View the log for more insight of what went wrong."
+		Pop $0
+		SetCtlColors $0 "0xd12222" transparent
+		GetDlgItem $0 $HWNDPARENT 1
+		EnableWindow $0 0
+	${Else}
+		${NSD_CreateLabel} 0 0 420 70 "The installation script has been run, and the install log has been written to install-log.txt. Shortcut that launches both the manager and the API has been placed to your desktop. Enjoy!"	
+		Pop $0
+		CreateShortCut "$DESKTOP\Astrometry-api-lite.lnk" "$WINDIR\System32\bash.exe" "-c $\"cd '$LinuxInstallDir' && bash -c ./kill-me.sh && node_modules/.bin/concurrently -p '[{name}]' -n 'Jobs,Api' -c 'yellow.bold,green.bold' 'node dist/manager/main.js' 'node dist/api/server.js'$\"" "$INSTDIR\icon.ico"
+		
+		${NSD_CreateLabel} 0 70 420 40 "You can read more about the application and the Dashboard from the readme (doc/readme.html). Please at least read the $\"Windows 10 primer$\"."
+		Pop $0
+
+		${NSD_CreateLink} 0 125 420 20 "Open readme in browser"
+		Pop $0
+		${NSD_OnClick} $0 onClickReadmeLink
+	${EndIf}
 
 	nsDialogs::Show
 

@@ -60,6 +60,7 @@
 			<h2>Table of contents</h2>
 			<ul>
 				<li><a href="#overview">Overview</a></li>
+				<li><a href="#win">Windows 10 primer</a></li>
 				<li><a href="#install">Installer</a></li>
 				<li><a href="#conf">Configuration</a></li>
 				<li><a href="#dash">Dashboard</a></li>
@@ -89,6 +90,26 @@
 			<p>
 				Where ever you would normally enter <b><a href="http://nova.astrometry.net">http://nova.astrometry.net</a></b>, you can now enter the address of your locally running
 				API (by default <b><a href="http://localhost:3000">http://localhost:3000</a></b>). The API behaves like Nova's API would.
+			</p>
+		</div>
+		<hr />
+		<div class="content">
+			<h2 id="win">Windows 10 primer</h2>
+			<p>
+				There are a few things to note about the software running under the Linux Subsystem:
+			</p>
+			<p>
+				<b>Exit properly with CTRL+C</b>. And now for the explanation:<br/>
+				You'll have no problems, as long as the only bash window open is the Astrometry-api-lite window.
+				However if you have multiple bash windows open, there's a snag: when you close the window, the
+				NodeJS processes will still be left running (no clue why - only the node processes do this) so while you have
+				closed the window, the API and the Manager are still running. However
+				if you close the window by pressing <b>CTRL+C</b> the processes will be killed properly. The desktop 
+				shortcut also includes a small kill script that prevents you from accidentally running multiple instances
+				simultaneously.
+				<br/><br/>
+				So as a summary, exit with CTRL+C. However if you're not running any other bash windows, you can simply close
+				the window normally.
 			</p>
 		</div>
 		<hr />
@@ -236,16 +257,16 @@
 			<h2 id="trouble">Troubleshooting</h2>
 			<p>
 				<b>First of all, important note:</b> do not try to run multiple parallel instances of the API or the Worker Manager!
-				This may lead to job database corruption and the maxConcurrentWorkers setting loses all meaning as each manager only tracks
+				If you're using the Windows 10 shortcut, then you have no need to worry - the startup includes a kill script that will only allow
+				running a single instance of each process.
+				<br/>
+				Running multiple instances may lead to job database corruption and the maxConcurrentWorkers setting loses all meaning as each manager only tracks
 				its own child processes.
 			</p>
 			<p>
-				Secondly, if you terminate the bash window, but you have other bash windows still open, <b>the processes will not terminate</b>!
+				Secondly, as mentioned in the Windows 10 primer, if you terminate the bash window, but you have other bash windows still open, <b>the processes will not terminate</b>!
 				This is important to note! Only when the last bash window is closed, all the Linux subsystem processes will die.
-				<b>So if you have a bash window open when you close the Astrometry-api-lite window, the processes will continue to run.</b>
-				If you then run the Astrometry-api-lite from the shortcut, you'll have two parallel instances running - and that is bad.
-				The proper way of closing the window is with <b>CTRL+C</b>, which signals abort to the processes - with that, the processes
-				will die regardless of still having other bash windows open.
+				<b>So if you have a bash window open when you close the Astrometry-api-lite window, the processes will continue to run.</b>				
 			</p>
 			<p>
 				<b>Q:</b> I'm getting an SQLITE error claiming my database is corrupted, what to do?

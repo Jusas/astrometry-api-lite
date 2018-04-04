@@ -35,6 +35,11 @@ usage() {
 
 }
 
+# v1.1.0 release.
+RELEASE_VER="v1.1.0"
+#RELEASE_VER="master"
+SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/${RELEASE_VER}.zip"
+
 INST_APILITE=
 INST_ASTROMETRYNET=
 INST_INDEXES=
@@ -142,6 +147,7 @@ if [ "" == "$unzip_ok" ]; then
   echo "No unzip installed. Setting up unzip with apt-get..."
   if ! output=$(sudo apt-get --yes install unzip); then
 		echo "ERROR: unzip install failed, cannot continue."
+		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi	
 fi
@@ -153,6 +159,7 @@ if [ "" == "$wget_ok" ]; then
   echo "No wget installed. Setting up wget with apt-get..."
   if ! output=$(sudo apt-get --yes install wget); then
 		echo "ERROR: wget install failed, cannot continue."
+		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi	
 fi
@@ -167,10 +174,12 @@ if [ "$INST_APILITE" ]; then
 		echo "This may take a while, hang on..."
 		if ! output=$(wget -qO- https://deb.nodesource.com/setup_8.x | sudo -E bash -); then
 			echo "ERROR: failed to install NodeJS, cannot continue."
+			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi
 		if ! output=$(sudo apt-get install -y nodejs); then
 			echo "ERROR: failed to install NodeJS, cannot continue."
+			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi
 	fi
@@ -186,28 +195,31 @@ if [ "$INST_APILITE" ]; then
 
 	echo
 	echo "Downloading astrometry-api-lite source archive..."
-	if ! output=$(wget -q https://github.com/Jusas/astrometry-api-lite/archive/master.zip); then
-		echo "ERROR: Failed to download astrometry-api-lite package, cannot continue."
+	if ! output=$(wget -q -O astrometry-api-lite.zip ${SOURCE_PACKAGE}); then
+		echo "ERROR: Failed to download astrometry-api-lite package (${SOURCE_PACKAGE}), cannot continue."
+		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi
 
 
 	echo
 	echo "Unzipping astrometry-api-lite"
-	unzip -q master.zip
-	mv astrometry-api-lite-master/* .
-	rm -rf astrometry-api-lite-master
-	rm master.zip
+	unzip -q astrometry-api-lite.zip
+	mv astrometry-api-lite-${RELEASE_VER}/* .
+	rm -rf astrometry-api-lite-${RELEASE_VER}
+	rm astrometry-api-lite.zip
 
 	echo
 	echo "Installing astrometry-api-lite..."
 	if ! output=$(npm install); then
 		echo "ERROR: Failed to install astrometry-api-lite, cannot continue"
+		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi
 	echo "Running build..."
 	if ! output=$(npm run all:build); then
 		echo "ERROR: Failed to install astrometry-api-lite, cannot continue"
+		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi
 
@@ -277,6 +289,7 @@ if [ ! -z "$INST_ASTROMETRYNET" ] && [ "$INST_ASTROMETRYNET" -gt "0" ]; then
 		echo "astrometry.net is not installed. Installing Debian packages with apt-get."
 		if ! output=$(sudo apt-get --yes install astrometry.net); then
 			echo "ERROR: failed to install astrometry.net, cannot continue."
+			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi	
 	fi
@@ -365,9 +378,13 @@ if [ ! -z "$INST_INDEXES" ]; then
 
 fi
 
+printf "OK" > install-outcome.txt
+
 echo
 echo "======================================================================"
 echo "Installation complete!"
 echo "======================================================================"
 echo
 read -p "Press any key..." x
+
+exit 0
