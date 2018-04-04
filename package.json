@@ -1,6 +1,12 @@
 {
   "name": "astrometry.net-api-lite",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "license": "MIT",
+  "author": {
+    "name": "Jussi Saarivirta",
+    "email": "jusasi@gmail.com",
+    "url": "https://github.com/Jusas"
+  },
   "description": "A lite API-only version of astrometry.net, to provide solver functionality via an identical API",
   "scripts": {
     "all:build": "npm run api:build && npm run worker:build && npm run mgr:build && npm run db:create",

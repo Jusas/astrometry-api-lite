@@ -2,6 +2,10 @@
 
 A lite version of the Astrometry.net Nova API built with node.js. Its purpose is to provide an alternative lightweight API to the Astrometry.net full site and suite.
 
+## NEW: Windows 10 Subsystem for Linux installer
+
+To make life a lot easier for Windows users, an installation wizard now exists that installs the whole shebang with a few clicks!
+
 [Skip straight to installation instructions.](#installation)
 
 A test API is set up at http://astro-api.b5p.org if you wish to give it a spin ([swagger UI available](http://astro-api.b5p.org/swagger), note that from the swagger UI you can only use url upload, regular upload lacks UI). Don't use it for "production" purposes, the computing resources aren't very high and no service is guaranteed. It also may not be running the most recent version all the time.
@@ -80,7 +84,67 @@ The worker does the actual processing. Once spawned, it reads the queue for the 
 
 ## Installation
 
-### Prerequisites
+### Windows 10 installer
+
+If you're running Windows 10 and would like to install this taking advantage of Windows 10 Subsystem for Linux, good news: __an installer exists that does all of it for you__!
+
+[Head over to Releases to download it.](https://github.com/Jusas/astrometry-api-lite/releases)
+
+### Releases
+
+For Windows 10, the easiest way is to use the installer.
+
+[Go to releases to download it](https://github.com/Jusas/astrometry-api-lite/releases).
+
+### Install script
+
+If you're running Ubuntu you can use the installation script provided in the install directory to run the install.
+
+Go to/make the directory you want to install it into, then get the script and run it:
+
+```
+wget -q https://raw.githubusercontent.com/Jusas/astrometry-api-lite/master/installer/install.sh
+chmod u+x install.sh
+```
+
+```
+./install.sh <options>
+```
+
+Options being:
+```
+-l <0|1> -a <0|1> [-i <string>] -u <string> -p <num>
+-s <0|1> -d <0|1> -c <0|1> -j <num> -o <0|1> -n <0|1>
+-z <num>
+
+Parameters:
+<0|1> means no/yes, ie. '-l 1' means 'install api-lite'
+
+  -l   install the latest api-lite package from github 
+  -a   install astrometry.net package using apt-get
+  -i   install astrometry.net index files, a comma separated
+         string with index scale numbers, from 0 to 19,
+         eg. '-i 4,5,6,7,8'. Optional parameter.
+  -u   set upload directory in configuration
+  -p   set port in configuration
+  -s   enable Swagger UI in configuration
+  -d   enable Dashboard in configuration
+  -c   enable job canceling in Dashboard
+  -j   set maximum concurrent jobs in configuration
+  -o   enable detected objects image storing in configuration
+  -n   enable annotation image storing in configuration
+  -z   set stored image scaling factor in configuration
+
+example: ./install.sh -l 1 -a 1 -i 19,18,17,16,15,14,13,12,11,10,9,8,7,6,5 -u /tmp/astro-upload -p 3000 -s 1 -d 1 -c 1 -j 4 -o 1 -n 1 -z 0.5
+```
+
+About the index numbering, see http://data.astrometry.net/4200/README
+
+The script will install all required packages, provided that they're found and sets up astrometry.net for you. You should be all good to go when the script finishes.
+
+### Manually from the sources
+
+#### Prerequisites
 
 Firstly, make sure you have Node.js installed. You'll want the latest stable version - an older version might work, but it has not been tested.
 
@@ -90,11 +154,12 @@ Secondly, make sure the astrometry.net solver is installed. If your Linux distro
 
 Additionally you'll also need the astrometry.net index files. Your Linux distro may have them as packages as well. Alternatively you can go [straight to the source](http://broiler.astrometry.net/~dstn/4200/) and download what you need.
 
-### Installing the package
+#### Sources
 
 [Download the zip](https://github.com/Jusas/astrometry-api-lite/archive/master.zip) or clone the repo:
 
 ```git clone https://github.com/Jusas/astrometry-api-lite.git```
+
 
 Then install the prerequisites and build the project:
 

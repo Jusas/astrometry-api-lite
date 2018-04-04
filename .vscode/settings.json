@@ -8,5 +8,7 @@
     "tslint.ignoreDefinitionFiles": false,
     "tslint.autoFixOnSave": true,
     "tslint.exclude": "**/node_modules/**/*",
-    "mocha.files.glob": "**/src/**/*.test.ts"
+    "mocha.files.glob": "**/src/**/*.test.ts",
+    "nsis.pathToMakensis": "C:/Program Files (x86)/NSIS",
+
 }
