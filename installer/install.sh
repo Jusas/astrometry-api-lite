@@ -36,9 +36,8 @@ usage() {
 }
 
 # v1.1.0 release.
-RELEASE_VER="v1.1.0"
-#RELEASE_VER="master"
-SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/${RELEASE_VER}.zip"
+RELEASE_VER="1.1.0"
+SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/v${RELEASE_VER}.zip"
 
 INST_APILITE=
 INST_ASTROMETRYNET=

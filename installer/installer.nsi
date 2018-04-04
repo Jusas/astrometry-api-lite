@@ -186,7 +186,7 @@ Function ApiSettings
 	Pop $CfgSwagger_CB
 	${NSD_CreateBitmap} 0 165 354 57 ""
 	Pop $0
-	${NSD_SetImage} $0 "swagger.bmp" $1
+	${NSD_SetImage} $0 "$PLUGINSDIR\swagger.bmp" $1
 
 	nsDialogs::Show
 FunctionEnd
@@ -215,7 +215,7 @@ Function DashboardSettings
 
 	${NSD_CreateBitmap} 0 20 354 127 ""
 	Pop $0
-	${NSD_SetImage} $0 "dashboard.bmp" $1
+	${NSD_SetImage} $0 "$PLUGINSDIR\dashboard.bmp" $1
 
 	${NSD_CreateCheckBox} 0 165 400 20 "Enable Dashboard"
 	Pop $CfgDashboard_CB
@@ -591,6 +591,13 @@ Function onClickLogLink
 FunctionEnd
 
 Function .onInit
+	InitPluginsDir
+	ReserveFile "swagger.bmp"
+	ReserveFile "dashboard.bmp"
+
+	File /oname=$PLUGINSDIR\swagger.bmp "swagger.bmp"
+	File /oname=$PLUGINSDIR\dashboard.bmp "dashboard.bmp"
+
 	SectionSetSize ${SecANetPkg_1} 130
 	SectionSetSize ${SecANetPkg_2} 161
 	SectionSetSize ${SecANetPkg_3} 209
