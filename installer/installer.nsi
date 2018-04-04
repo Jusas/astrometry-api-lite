@@ -335,6 +335,12 @@ Function SaveConfig
 	CreateDirectory "$INSTDIR"
 	FileOpen $1 "$INSTDIR\install.args" w
 
+	StrCpy $2 ""
+	StrCpy $3 ""
+	StrCpy $9 ""
+	StrCpy $8 ""
+	StrCpy $4 ""
+
   ;{NSD_GetState} $somecbox $output
 	${If} ${SectionIsSelected} ${SecApi}
 		StrCpy $2 "$2 -l 1"
@@ -348,8 +354,6 @@ Function SaveConfig
 		StrCpy $2 "$2 -a 0"
 	${EndIf}
 
-
-	StrCpy $2 "$2 -i "
 
 	${If} ${SectionIsSelected} ${SecANetPkg_1}
 		StrCpy $9 "$9,19"	
@@ -412,7 +416,14 @@ Function SaveConfig
 		StrCpy $9 "$9,0"	
 	${EndIf}
 	StrCpy $9 $9 "" 1
-	StrCpy $2 "$2 $9"
+
+	StrLen $8 $9
+
+	; only if we have some selected
+	${If} $8 > 0
+		StrCpy $2 "$2 -i "
+		StrCpy $2 "$2 $9"
+	${EndIf}
 
 	; C
 	StrCpy $4 $CfgQueueFileUploadDir_Val 1 0
