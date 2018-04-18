@@ -4,6 +4,12 @@ Content-Type: application/x-www-form-urlencoded
 
 request-json={"session": "xxx", "url": "https://i.imgur.com/gAl5Wsw.jpg", "downsample_factor": 2 }
 
+### LOCALHOST url upload from APOD with scale_est and scale_err
+POST http://localhost:3000/api/url_upload
+Content-Type: application/x-www-form-urlencoded
+
+request-json={"session": "####", "url": "http://apod.nasa.gov/apod/image/1206/ldn673s_block1123.jpg", "scale_units": "degwidth", "scale_est": 0.75, "scale_err": 25, "scale_type": "ev", "center_ra": 290, "center_dec": 11, "radius": 2.0 }
+
 ###
 
 # ASTROMETRY.NET url upload

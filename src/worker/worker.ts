@@ -219,8 +219,20 @@ function cancelChecker(id: number): () => Promise<boolean> {
 }
 
 async function fetch(url: string, outDir: string): Promise<string> {
-	const file = path.join(outDir, "web-file");
-	await spawn("curl", ["-o", file, url]).catch( (err) => {
+	// Get file extension if available
+	const extIndex = url.lastIndexOf(".");
+	let ext = "";
+	if(extIndex > 0) {
+		ext = url.substr(extIndex);
+		// extension should only be alphanumerics.
+		const pattern = /^\.[a-zA-Z0-9]+$/;
+		if(!pattern.test(ext)) {
+			ext = "";
+		}
+	}
+
+	const file = path.join(outDir, `web-file${ext}`);
+	await spawn("curl", ["-L", "-o", file, url]).catch( (err) => {
 		console.error(`Failed to get url '${url}'`);
 		throw err;
 	});
@@ -276,13 +288,15 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 	}
 	if(queueEntry.p_scale_type) {
 		if(queueEntry.p_scale_type == "ev" && queueEntry.p_scale_est && queueEntry.p_scale_err) {
-			params.push(...["--scale-est", queueEntry.p_scale_est]);
-			params.push(...["--scale-err", queueEntry.p_scale_err]);
+			const scale_low = queueEntry.p_scale_est * (1.0 - queueEntry.p_scale_err / 100.0);
+			const scale_high = queueEntry.p_scale_est * (1.0 + queueEntry.p_scale_err / 100.0);
+			params.push(...["--scale-low", scale_low]);
+			params.push(...["--scale-high", scale_high]);
 		}
 		if(queueEntry.p_scale_type == "ul" && queueEntry.p_scale_upper && queueEntry.p_scale_lower) {
 			params.push(...["--scale-high", queueEntry.p_scale_upper]);
 			params.push(...["--scale-low", queueEntry.p_scale_lower]);
-		}					
+		}
 	}
 	if(queueEntry.p_center_ra && queueEntry.p_center_dec && queueEntry.p_radius) {
 		params.push(...["--ra", queueEntry.p_center_ra]);

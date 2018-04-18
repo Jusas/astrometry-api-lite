@@ -8,10 +8,10 @@
 !include "strcase.nsh"
 !include "linkopen.nsh"
 
-!define VERSION "v1.1.0"
+!define VERSION "v1.1.1"
 !define APP_VERSION "Astrometry-api-lite ${VERSION}"
 
-Name "Astrometry-api-lite"
+Name "Astrometry-api-lite ${VERSION}"
 OutFile "install_${VERSION}.exe"
 InstallDir "C:\astrometry-api-lite"
 
