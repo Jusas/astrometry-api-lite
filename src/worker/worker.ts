@@ -66,7 +66,7 @@ export async function processQueueItem() {
 
 		const params = buildSolveParams(workItem, outDir);
 
-		
+		console.log("calling: solve-field " + params.join(" "));
 		await spawn("solve-field", params, cancelChecker(workItem.id)).catch( (err) => {
 			console.error("Solve-field failed");
 			throw err;
