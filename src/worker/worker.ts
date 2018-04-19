@@ -309,8 +309,8 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 	if(queueEntry.p_tweak_order) {
 		params.push(...["--tweak-order", queueEntry.p_tweak_order]);
 	}
-	if(queueEntry.p_crpix_center) {
-		params.push(...["--crpix-center", queueEntry.p_crpix_center]);
+	if(queueEntry.p_crpix_center && queueEntry.p_crpix_center > 0) {
+		params.push("--crpix-center");
 	}
 	if(queueEntry.p_parity && queueEntry.p_parity <= 1) {
 		params.push(...["--parity", queueEntry.p_parity == 0 ? "pos" : "neg"]);
