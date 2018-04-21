@@ -8,7 +8,8 @@ var app = new Vue({
 			workerManagerRunning: null
 		},
 		downloadedImage: null,
-		supports: {}
+		supports: {},
+		openDetails: []
 	},
 	beforeMount(){
 		let self = this;
@@ -53,6 +54,16 @@ var app = new Vue({
 			axios.default.get(latestJobsUrl).then( (response) => {
 				self.latestJobs = response.data;
 			});
+		},
+		toggleDetails: function(job) {
+			const itemIdx = this.openDetails.indexOf(job.id);
+			if(itemIdx == -1)
+				this.openDetails.push(job.id);
+			else
+				this.openDetails.splice(itemIdx, 1);
+		},
+		isOpen: function(job) {
+			return this.openDetails.indexOf(job.id) != -1;
 		},
 		triggerThumbModal: function(jobId, imgType) {
 			this.downloadedImage = null;

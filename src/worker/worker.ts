@@ -103,7 +103,7 @@ export async function processQueueItem() {
 					console.log("Processing output object image...")
 					const f = `${workItem.id}-objs.png`;
 					objImage = await resizeAndConvertToBase64(`${outDir}/${f}`, imgScaling);
-					objImageThumb = await resizeAndConvertToBase64(`${outDir}/${f}`, 0.075);
+					objImageThumb = await resizeAndConvertToBase64(`${outDir}/${f}`, 0.15);
 				}
 				catch(err) {
 					console.log("Failed to convert/resize object image", err);
