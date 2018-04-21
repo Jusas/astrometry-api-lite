@@ -204,7 +204,8 @@ const models: TsoaRoute.Models = {
 };
 
 export function RegisterRoutes(app: any) {
-    app.post('/api/login',
+    // app.post('/api/login',
+    app.use('/api/login',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 req: { "in": "body", "name": "req", "required": true, "ref": "LoginRequestWrapper" },
@@ -222,7 +223,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.post('/api/upload',
+    // app.post('/api/upload',
+    app.use('/api/upload',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 model: { "in": "body", "name": "model", "required": true, "ref": "UploadRequestWrapper" },
@@ -241,7 +243,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.post('/api/url_upload',
+    // app.post('/api/url_upload',
+    app.use('/api/url_upload',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 model: { "in": "body", "name": "model", "required": true, "ref": "UrlUploadRequestWrapper" },
@@ -259,7 +262,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/submissions/:id',
+    // app.get('/api/submissions/:id',
+    app.use('/api/submissions/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
@@ -277,7 +281,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/jobs/:id',
+    // app.get('/api/jobs/:id',
+    app.use('/api/jobs/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
@@ -295,7 +300,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/jobs/:id/calibration',
+    // app.get('/api/jobs/:id/calibration',
+    app.use('/api/jobs/:id/calibration',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -313,7 +319,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/jobs/:id/info',
+    // app.get('/api/jobs/:id/info',
+    app.use('/api/jobs/:id/info',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -331,7 +338,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/stats/supports',
+    // app.get('/api/stats/supports',
+    app.use('/api/stats/supports',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
             };
@@ -348,7 +356,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/stats/latest',
+    // app.get('/api/stats/latest',
+    app.use('/api/stats/latest',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
             };
@@ -365,7 +374,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/stats/workers',
+    // app.get('/api/stats/workers',
+    app.use('/api/stats/workers',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
             };
@@ -382,7 +392,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/result-images/annotation/:id',
+    // app.get('/api/result-images/annotation/:id',
+    app.use('/api/result-images/annotation/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -400,7 +411,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/result-images/objects/:id',
+    // app.get('/api/result-images/objects/:id',
+    app.use('/api/result-images/objects/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -418,7 +430,8 @@ export function RegisterRoutes(app: any) {
             promiseHandler(controller, promise, response, next);
         })
     );
-    app.get('/api/job-control/cancel/:id',
+    // app.get('/api/job-control/cancel/:id',
+    app.use('/api/job-control/cancel/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },

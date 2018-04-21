@@ -1,10 +1,22 @@
 # LOCALHOST job
-GET http://localhost:3000/api/jobs/15
+GET http://localhost:3000/api/jobs/1
+
+###
+
+POST http://localhost:3000/api/jobs/1
 
 ###
 
 # ASTROMETRY.NET job
 GET http://nova.astrometry.net/api/jobs/2443894
+
+###
+
+POST http://nova.astrometry.net/api/jobs/2443894
+
+###
+
+DELETE http://nova.astrometry.net/api/jobs/2443894
 
 ###
 
