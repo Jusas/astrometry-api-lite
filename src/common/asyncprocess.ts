@@ -15,12 +15,12 @@ export let spawn = (command: string, args: string[], cancellationCheckFn?: () =>
       child.stderr.pipe(stderrStream);
     }
     child.stdout.on("data", data => {
-      bl.push(data.toString())
-      console.log(data.toString());
+      bl.push(data.toString());
+      console.log(data.toString().replace(/\n$/, ""));
     });
     child.stderr.on("data", data => {
       bl.push(data.toString());
-      console.error(data.toString());
+      console.error(data.toString().replace(/\n$/, ""));
     });
   }
 

@@ -318,6 +318,12 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 	if(queueEntry.p_positional_error) {
 		params.push(...["--pixel-error", queueEntry.p_positional_error]);
 	}
+
+	const jobSolverTmpDir = path.join(outDir, "solver-temp");
+	if(!fs.existsSync(jobSolverTmpDir)) {
+		shelljs.mkdir("-p", jobSolverTmpDir);
+	}
+	params.push(...["--temp-dir", jobSolverTmpDir]);
 	
 	if(queueEntry.url) {
 		params.push(queueEntry.filename);
@@ -343,9 +349,6 @@ function wcsTableToJson(buf: string): any {
 			json[keyValue[0]] = keyValue[1];
 			console.log("VAL: " + keyValue[0] + " = " + keyValue[1]);
 		}
-		else {
-			console.log("WARNING: arr len is not 2:");
-		}
 	});
 	console.log("json is now: " + JSON.stringify(json));
 	return json;
@@ -356,6 +359,9 @@ function calcRadius(imagew: number, imageh: number, pixscale: number): number {
 }
 
 function cleanUpTemp(workItem: JobQueueEntry) {
+	if(!configuration().cleanTempUponCompletion) {
+		return;
+	}
 	let workDir = path.join(resolveTempDir(), `${workItem.id}`);
 	let uploadDir = resolveTempUploadDir();
 	if(fs.existsSync(workDir)) {
@@ -370,7 +376,7 @@ function cleanUpTemp(workItem: JobQueueEntry) {
 
 function cleanUpWorkItemTempDir(workDir: string) {
 	if(fs.existsSync(workDir)) {
-		console.log("Pre-cleaning up " + workDir);
+		console.log("Work directory already exists, pre-cleaning up " + workDir);
 		rimraf.sync(workDir, {disableGlob: true})
 	}
 }

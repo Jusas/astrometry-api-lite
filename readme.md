@@ -258,6 +258,7 @@ will load `configuration.local.json` file instead.
 | database | the path to the SQLite database file where the queue and results are stored |
 | queueFileUploadDir | the path where uploaded files are stored |
 | tempDir | the path where (temporary) result files produced by the solver are stored |
+| cleanTempUponCompletion | clean up temp files after solver finishes (default: true) |
 | computationTimeLimit | the time limit for the solver, jobs that last longer will be aborted |
 | skipJobsOlderThanSeconds | the worker will abandon jobs that are older than this value in seconds (useful if the API has piled up jobs but the manager has been down, you don't want to start solving old jobs) |
 | storeObjsImages | true or false, whether or not you want to store the resulting object images for each job. Stores them in the job database in base64 format. |
