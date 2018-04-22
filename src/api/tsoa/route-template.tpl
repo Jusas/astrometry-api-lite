@@ -36,7 +36,31 @@ export function RegisterRoutes(app: any) {
     {{#each controllers}}
         {{#each actions}}
             // app.{{method}}('{{fullPath}}',
-            app.use('{{fullPath}}',
+            // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+            app.get('{{fullPath}}',
+                {{#if security.length}}
+                authenticateMiddleware({{json security}}),
+                {{/if}}
+                asyncErrorHandler(async (request: any, response: any, next: any) => {
+                    const args = {
+                        {{#each parameters}}
+                            {{@key}}: {{{json this}}},
+                        {{/each}}
+                    };
+        
+                    let validatedArgs: any[] = [];
+                    try {
+                        validatedArgs = getValidatedArgs(args, request);
+                    } catch (err) {
+                        return next(err);
+                    }
+        
+                    const controller = new {{../name}}();
+                    const promise = controller.{{name}}.apply(controller, validatedArgs);
+                    promiseHandler(controller, promise, response, next);
+                })
+                );
+            app.post('{{fullPath}}',
                 {{#if security.length}}
                 authenticateMiddleware({{json security}}),
                 {{/if}}

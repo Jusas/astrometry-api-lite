@@ -205,7 +205,26 @@ const models: TsoaRoute.Models = {
 
 export function RegisterRoutes(app: any) {
     // app.post('/api/login',
-    app.use('/api/login',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/login',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                req: { "in": "body", "name": "req", "required": true, "ref": "LoginRequestWrapper" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new LoginController();
+            const promise = controller.postLogin.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/login',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 req: { "in": "body", "name": "req", "required": true, "ref": "LoginRequestWrapper" },
@@ -224,7 +243,27 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.post('/api/upload',
-    app.use('/api/upload',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/upload',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                model: { "in": "body", "name": "model", "required": true, "ref": "UploadRequestWrapper" },
+                req: { "in": "request", "name": "req", "required": true, "dataType": "object" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new UploadController();
+            const promise = controller.postUpload.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/upload',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 model: { "in": "body", "name": "model", "required": true, "ref": "UploadRequestWrapper" },
@@ -244,7 +283,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.post('/api/url_upload',
-    app.use('/api/url_upload',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/url_upload',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                model: { "in": "body", "name": "model", "required": true, "ref": "UrlUploadRequestWrapper" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new UrlUploadController();
+            const promise = controller.postUploadUrl.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/url_upload',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 model: { "in": "body", "name": "model", "required": true, "ref": "UrlUploadRequestWrapper" },
@@ -263,7 +321,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/submissions/:id',
-    app.use('/api/submissions/:id',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/submissions/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new SubmissionsController();
+            const promise = controller.get.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/submissions/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
@@ -282,7 +359,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/jobs/:id',
-    app.use('/api/jobs/:id',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/jobs/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new JobsController();
+            const promise = controller.getJob.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/jobs/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
@@ -301,7 +397,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/jobs/:id/calibration',
-    app.use('/api/jobs/:id/calibration',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/jobs/:id/calibration',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new JobsController();
+            const promise = controller.getCalibration.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/jobs/:id/calibration',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -320,7 +435,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/jobs/:id/info',
-    app.use('/api/jobs/:id/info',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/jobs/:id/info',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new JobsController();
+            const promise = controller.getInfo.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/jobs/:id/info',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -339,7 +473,25 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/stats/supports',
-    app.use('/api/stats/supports',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/stats/supports',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new StatsController();
+            const promise = controller.getSupportData.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/stats/supports',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
             };
@@ -357,7 +509,25 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/stats/latest',
-    app.use('/api/stats/latest',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/stats/latest',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new StatsController();
+            const promise = controller.getLatestJobs.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/stats/latest',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
             };
@@ -375,7 +545,25 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/stats/workers',
-    app.use('/api/stats/workers',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/stats/workers',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new StatsController();
+            const promise = controller.getWorkerStates.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/stats/workers',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
             };
@@ -393,7 +581,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/result-images/annotation/:id',
-    app.use('/api/result-images/annotation/:id',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/result-images/annotation/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new ResultImageController();
+            const promise = controller.getAnnotationImage.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/result-images/annotation/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -412,7 +619,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/result-images/objects/:id',
-    app.use('/api/result-images/objects/:id',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/result-images/objects/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new ResultImageController();
+            const promise = controller.getObjectImage.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/result-images/objects/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "double" },
@@ -431,7 +657,26 @@ export function RegisterRoutes(app: any) {
         })
     );
     // app.get('/api/job-control/cancel/:id',
-    app.use('/api/job-control/cancel/:id',
+    // Not ideal, but to comply with Nova's responses to both GET and POST for all methods, we register both routes by default.
+    app.get('/api/job-control/cancel/:id',
+        asyncErrorHandler(async (request: any, response: any, next: any) => {
+            const args = {
+                id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request);
+            } catch (err) {
+                return next(err);
+            }
+
+            const controller = new JobControlController();
+            const promise = controller.killJob.apply(controller, validatedArgs);
+            promiseHandler(controller, promise, response, next);
+        })
+    );
+    app.post('/api/job-control/cancel/:id',
         asyncErrorHandler(async (request: any, response: any, next: any) => {
             const args = {
                 id: { "in": "path", "name": "id", "required": true, "dataType": "integer", "validators": { "isInt": { "errorMsg": "id" } } },

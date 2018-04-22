@@ -8,7 +8,7 @@ To make life a lot easier for Windows users, an installation wizard now exists t
 
 [Skip straight to installation instructions.](#installation)
 
-A test API is set up at http://astro-api.b5p.org if you wish to give it a spin ([swagger UI available](http://astro-api.b5p.org/swagger), note that from the swagger UI you can only use url upload, regular upload lacks UI). Don't use it for "production" purposes, the computing resources aren't very high and no service is guaranteed. It also may not be running the most recent version all the time.
+A test API is set up at http://astro-api.b5p.org (dashboard: [http://astro-api.b5p.org/dashboard](http://astro-api.b5p.org/dashboard)) if you wish to give it a spin ([swagger UI available](http://astro-api.b5p.org/swagger), note that from the swagger UI you can only use url upload, regular upload lacks UI). Don't use it for "production" purposes, the computing resources are very low and no service is guaranteed. It's merely a demo. It also may not be running the most recent version all the time.
 
 ## Why?
 
