@@ -178,7 +178,7 @@ export async function processQueueItem() {
 			console.log("Job marked as failure, error information updated");
 		}
 		catch(err) {
-			console.error("Error, couldn't even set the job status as failure :(");
+			console.log("Error, couldn't even set the job status as failure :(");
 		}				
 	}
 	finally {
@@ -233,7 +233,7 @@ async function fetch(url: string, outDir: string): Promise<string> {
 
 	const file = path.join(outDir, `web-file${ext}`);
 	await spawn("curl", ["-L", "-o", file, url]).catch( (err) => {
-		console.error(`Failed to get url '${url}'`);
+		console.log(`Failed to get url '${url}'`);
 		throw err;
 	});
 	return file;
@@ -282,6 +282,7 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 	params.push(...["--wcs", `${outDir}/wcs`]);
 	params.push(...["-S", `${outDir}/solved`]);
 	params.push(...["-l", `${timeLimit}`]);
+	params.push(...["--no-fits2fits"]);
 
 	if(queueEntry.p_scale_units) {
 		params.push(...["--scale-units", queueEntry.p_scale_units]);			

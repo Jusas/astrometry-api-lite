@@ -1,8 +1,8 @@
 # LOCALHOST url upload
-POST http://localhost:3000/api/url_upload
+POST http://astro-api.b5p.org/api/url_upload
 Content-Type: application/x-www-form-urlencoded
 
-request-json={"session": "xxx", "url": "https://i.imgur.com/gAl5Wsw.jpg", "downsample_factor": 2 }
+request-json={"session": "xxx", "url": "https://i.imgur.com/gAl5Wsw.jpg", "downsample_factor": 4 }
 
 ### LOCALHOST url upload from APOD with scale_est and scale_err
 POST http://localhost:3000/api/url_upload

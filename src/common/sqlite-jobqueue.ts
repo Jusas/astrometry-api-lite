@@ -16,7 +16,7 @@ export class SqliteJobQueue {
     private async ensureOpen(): Promise<void> {
         if(!this.db) {
             this.db = await sqlite.open(this.dbFile);
-            await this.db.run("PRAGMA journal_mode = DEL;");
+            await this.db.run("PRAGMA journal_mode = TRUNCATE;");
             this.db.on("close", () => {
                 this.db = null;
             });
@@ -44,7 +44,7 @@ export class SqliteJobQueue {
         let tries = 0;
         let keepTrying = true;
         let error = null;
-        const waitSec = 0.1;
+        let waitSec = 0.1;
         let result = null;
 
         while(keepTrying) {
@@ -63,7 +63,7 @@ export class SqliteJobQueue {
                 
                 if(transaction) {
                     try {
-                        await this.db.run("commit");
+                        await this.db.run("rollback");
                     }
                     catch {}
                 }
@@ -73,13 +73,13 @@ export class SqliteJobQueue {
                     error = err;
                 }
                 if(keepTrying) {
-                    await this.waitSecs(waitSec * 1.5);
+                    await this.waitSecs((waitSec *= 1.5));
                 }
             }
         }
 
         if(error) {
-            console.error("Error with db operation: ", error);
+            console.log("Error with db operation: ", error);
             await this.db.close();
             throw new JobProcessingError(`Resilient db op failed after ${tries} tries`, []);
         }

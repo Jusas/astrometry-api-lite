@@ -12,11 +12,30 @@ async function run() {
     const maxWorkerCount = config.maxConcurrentWorkers;
     console.log("Manager started");
 
-    setInterval( async () => {
-        let queueCount = await mgr.getQueuedItemCount().catch( (err) => { throw err } );
-        //console.log("QUEUE COUNT " + queueCount);
-        if(activeWorkers.length < maxWorkerCount && queueCount > 0) {
-            let instance = mgr.spawnWorkerInstance();
+    setInterval(
+        () => console.log(`Worker manager is still alive, active/max worker count: ${activeWorkers.length}/${maxWorkerCount}`), 
+    300000);
+
+    await handleQueuedWork(maxWorkerCount);
+   
+}
+
+async function handleQueuedWork (maxWorkerCount: number) {
+    
+    let queueCount = await mgr.getQueuedItemCount().catch( 
+        (err) => console.log("Error getting queued item count: ", err) 
+    );
+    
+    if(activeWorkers.length < maxWorkerCount && queueCount > 0) {
+        let instance = null;
+        try {
+            instance = mgr.spawnWorkerInstance();
+        }
+        catch(err) {
+            console.log("Error, failed to spawn a worker instance: ", err);
+        }
+
+        if(instance != null) {
             activeWorkers.push(instance);
             console.log(`Active worker count: ${activeWorkers.length}/${maxWorkerCount}`);
             let promiseHandler = () => {
@@ -28,13 +47,16 @@ async function run() {
             };
             instance.promise
                 .then(promiseHandler, promiseHandler)
-                .catch(promiseHandler);            
-        }        
-    }, 500);
-
-    setInterval(() => console.log(`Worker manager is still alive, active/max worker count: ${activeWorkers.length}/${maxWorkerCount}`), 
-        300000);
-    
+                .catch(promiseHandler);
+            
+            const shortWait = new Promise<any>( (res, rej) => {
+                setTimeout(res, 500);
+            });
+            await shortWait;
+        }
+    }
+    setTimeout(handleQueuedWork, 500, maxWorkerCount);
 }
+
 
 run();

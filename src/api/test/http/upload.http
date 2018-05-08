@@ -8,7 +8,13 @@ Content-Disposition: form-data; name="request-json"
 Content-Type: application/text/plain
 MIME-Version: 1.0
 
-{"downsample_factor": 2, "publicly_visible": "y", "allow_modifications": "d", "session": "no-session", "allow_commercial_use": "d"}
+{"downsample_factor": 2, 
+"publicly_visible": "y", 
+"allow_modifications": "d", 
+"session": "no-session", 
+"allow_commercial_use": "d",
+"center_dec": 34.4245, "center_ra": 339.2695, "radius": 2.0}
+
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="file"; filename="test.png"
 Content-Type: application/octet-stream
@@ -16,6 +22,26 @@ MIME-Version: 1.0
 
 < ../data/ngc7331.jpg
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### FITS upload
+
+POST http://localhost:3000/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="request-json"
+Content-Type: application/text/plain
+MIME-Version: 1.0
+
+{"downsample_factor": 2, "center_ra": 315.50700, "center_dec": 67.88426, "radius": 2.0, "publicly_visible": "y", "allow_modifications": "d", "session": "no-session", "allow_commercial_use": "d"}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.fit"
+Content-Type: application/octet-stream
+MIME-Version: 1.0
+
+< ../data/NGC7023.fit
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
 
 ###
 

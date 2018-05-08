@@ -1,10 +1,12 @@
 import * as cproc from "child_process";
 import { WriteStream } from "fs";
 import { JobProcessingError } from "../common/models/error";
+import * as treekill from "tree-kill";
 const BufferList = require("bl")
 
 export let spawn = (command: string, args: string[], cancellationCheckFn?: () => Promise<boolean>, stdoutStream?: WriteStream, stderrStream?: WriteStream) => {
-  const child = cproc.spawn(command, args);
+  const child = cproc.spawn(command, args, {detached: false});
+  console.log("Spawned pid " + child.pid);
   const bl: string[] = [];
 
   if (child.stdout) {
@@ -31,8 +33,13 @@ export let spawn = (command: string, args: string[], cancellationCheckFn?: () =>
       intervalRun = setInterval( () => {
         cancellationCheckFn().then(value => {
           if(!value) {
-            console.log("Cancellation requested, killing the process");
-            child.kill();
+            console.log("Cancellation requested, killing the process, id " + child.pid);
+            
+            // process.kill(child.pid, "SIGKILL");
+            treekill(child.pid, "SIGKILL");
+            if(intervalRun) {
+              clearInterval(intervalRun);
+            }
           }
         }).catch();
       }, 1000);
