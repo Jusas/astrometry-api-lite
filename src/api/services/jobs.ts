@@ -33,7 +33,7 @@ export async function getStatus(id: number): Promise<JobStatus> {
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
 		
-	const item = await q.getWorkItem(id, 10);
+	const item = await q.getWorkItem(id, 15);
 	await q.release();
 	if(!item) {
 		throw new ApiError("Work item not found", 404);
@@ -54,7 +54,7 @@ export async function getCalibrationData(id: number): Promise<JobCalibrationResu
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
 	
-	const item = await q.getWorkItem(id, 10);
+	const item = await q.getWorkItem(id, 15);
 	await q.release();
 	if(!item) {
 		throw new ApiError("Work item not found", 404);
@@ -76,7 +76,7 @@ export async function getFullData(id: number): Promise<JobQueueEntry> {
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
 	
-	const item = await q.getWorkItem(id, 10);
+	const item = await q.getWorkItem(id, 15);
 	await q.release();
 
 	if(!item) {
@@ -92,7 +92,7 @@ export async function getLatestJobs(count: number): Promise<JobQueueEntryWithThu
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
 	
-	const items = await q.getLatestWorkItems(count, 10);
+	const items = await q.getLatestWorkItems(count, 15);
 	await q.release();
 
 	return items;
@@ -103,7 +103,7 @@ export async function getResultImage(id: number, imgType: ResultImageType): Prom
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
 	
-	const img = await q.getWorkItemResultImage(id, imgType, 10);
+	const img = await q.getWorkItemResultImage(id, imgType, 15);
 	await q.release();
 
 	return img;
@@ -114,16 +114,16 @@ export async function tryCancelJob(id: number): Promise<boolean> {
 	let dbFile = configuration().database;
 	const q = new SqliteJobQueue(dbFile);
 	
-	const item = await q.getWorkItem(id, 10);
+	const item = await q.getWorkItem(id, 15);
 	if(item) {
 		let didCancel = false;
 		try {
 			if(item.processing_state == 0) {
-				await q.trySetWorkItemFailed(id, "canceled by request", 10);
+				await q.trySetWorkItemFailed(id, "canceled by request", 15);
 				didCancel = true;
 			}
 			else if(item.processing_state == 1) {
-				await q.trySetWorkItemCanceled(id, 10);
+				await q.trySetWorkItemCanceled(id, 15);
 				didCancel = true;
 			}
 		}

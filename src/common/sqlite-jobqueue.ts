@@ -44,7 +44,7 @@ export class SqliteJobQueue {
         let tries = 0;
         let keepTrying = true;
         let error = null;
-        let waitSec = 0.1;
+        let waitSec = 0.2;
         let result = null;
 
         while(keepTrying) {
@@ -73,7 +73,7 @@ export class SqliteJobQueue {
                     error = err;
                 }
                 if(keepTrying) {
-                    await this.waitSecs((waitSec *= 1.5));
+                    await this.waitSecs((waitSec *= 1.25));
                 }
             }
         }

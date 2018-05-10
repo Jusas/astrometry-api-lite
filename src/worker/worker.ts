@@ -26,7 +26,7 @@ export async function processQueueItem() {
 
 	const q = new SqliteJobQueue(dbFile);
 
-	const workItem = await q.reserveWorkItem(myId, -1);
+	const workItem = await q.reserveWorkItem(myId, 10);
 	if(!workItem) {
 		console.log("Nothing to process");
 		return;
