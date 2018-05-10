@@ -282,7 +282,12 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
 	params.push(...["--wcs", `${outDir}/wcs`]);
 	params.push(...["-S", `${outDir}/solved`]);
 	params.push(...["-l", `${timeLimit}`]);
-	params.push(...["--no-fits2fits"]);
+	
+	if(!config["storeObjsImages"] && !config["storeNgcImages"]) {
+		params.push("--no-plots");
+	}
+	
+
 
 	if(queueEntry.p_scale_units) {
 		params.push(...["--scale-units", queueEntry.p_scale_units]);			

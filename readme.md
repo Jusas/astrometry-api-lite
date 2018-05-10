@@ -2,7 +2,14 @@
 
 A lite version of the Astrometry.net Nova API built with node.js. Its purpose is to provide an alternative lightweight API to the Astrometry.net full site and suite.
 
-## NEW: Windows 10 Subsystem for Linux installer
+## Latest version: v1.1.5
+
+- Fixes to uploads in FITS format; the installer now checks that your astropy package is up to date to overcome the FITS processing bug with older astropy versions
+- Fix to possible work item double-checkout bug
+- Added --no-plots parameter to solver params if the user has configured not to save any output images
+- Minor installer improvements
+
+## NEW introduced in v1.1.0: Windows 10 Subsystem for Linux installer
 
 To make life a lot easier for Windows users, an installation wizard now exists that installs the whole shebang with a few clicks!
 

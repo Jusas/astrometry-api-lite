@@ -64,6 +64,7 @@
 				<li><a href="#install">Installer</a></li>
 				<li><a href="#conf">Configuration</a></li>
 				<li><a href="#dash">Dashboard</a></li>
+				<li><a href="#perf">Improving solver performance</a></li>
 				<li><a href="#trouble">Troubleshooting and notes</a></li>
 				<li><a href="#source">Source</a></li>
 			</ul>
@@ -257,6 +258,28 @@
 		</div>		
 		<hr />
 		<div class="content">
+			<h2 id="perf">Improving solver performance</h2>
+			<p>
+				You may notice that the solver isn't as fast as you had hoped; there are a few factors that affect it.
+				<ul>
+					<li>Your CPU and memory</li>
+					<li>Whether you have HDD or SSD</li>
+					<li>Windows Defender settings</li>
+				</ul>
+			</p>
+			<p>
+				Installing the software to SSD including the astrometry.net indexes will most likely greatly speed up the solving process.
+				Since the solver accesses a lot of large files, this is pretty much a no-brainer, the faster it can read them the better.
+			</p>
+			<p>
+				Secondly, Windows Defender real-time protection can be rather aggressive and does extends its operation to the Linux Subsystem.
+				In some cases a speedup of maybe up to 10x can be achieved when the index directory, Linux Subsystem directory and the
+				astrometry-api-lite installation directory are added to the Defender exclusion list.
+			</p>
+			<img src="defender-settings.png">
+		</div>		
+		<hr />
+		<div class="content">
 			<h2 id="trouble">Troubleshooting</h2>
 			<p>
 				<b>First of all, important note:</b> do not try to run multiple parallel instances of the API or the Worker Manager!
@@ -279,6 +302,13 @@
 				(In Win10 close the bash window, open a new bash from start menu, and run <i>killall -9 node</i> just to be sure), 
 				copy a clean database to replace it from <i>src/common/workdb-template.db</i> and start the
 				programs again.
+				<p>
+					Alternatively, once you're sure the process is dead, open a bash shell to the installation directory and run: <br/>
+					<blockquote>
+						<pre>npm run reset-db</pre>
+					</blockquote>
+					This will in fact do the same thing as copying the workdb-template.db manually.
+				</p>
 			</p>			
 		</div>	
 		<hr />

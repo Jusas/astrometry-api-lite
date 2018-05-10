@@ -35,8 +35,12 @@ usage() {
 
 }
 
-# v1.1.1 release.
-RELEASE_VER="1.1.3"
+function version_gt() { 
+	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+}
+
+# v1.1.5 release.
+RELEASE_VER="1.1.5"
 SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/v${RELEASE_VER}.zip"
 
 INST_APILITE=
@@ -88,11 +92,11 @@ IFS=','
 INST_INDEXES_ARR=($INST_INDEXES)
 unset IFS;
 
-[ "$INST_SWAGGER" -gt "0" ] && enableSwagger="yes" || enableSwagger="no"
-[ "$INST_DASHBOARD" -gt "0" ] && enableDashboard="yes" || enableDashboard="no"
-[ "$INST_DASHBOARD_CANCEL" -gt "0" ] && enableDashboardCancel="yes" || enableDashboardCancel="no"
-[ "$INST_STORE_OBJIMG" -gt "0" ] && storeObjImg="yes" || storeObjImg="no"
-[ "$INST_STORE_ANNOTATIONS" -gt "0" ] && storeAnnoImg="yes" || storeAnnoImg="no"
+[[ "$INST_SWAGGER" -gt "0" ]] && enableSwagger="yes" || enableSwagger="no"
+[[ "$INST_DASHBOARD" -gt "0" ]] && enableDashboard="yes" || enableDashboard="no"
+[[ "$INST_DASHBOARD_CANCEL" -gt "0" ]] && enableDashboardCancel="yes" || enableDashboardCancel="no"
+[[ "$INST_STORE_OBJIMG" -gt "0" ]] && storeObjImg="yes" || storeObjImg="no"
+[[ "$INST_STORE_ANNOTATIONS" -gt "0" ]] && storeAnnoImg="yes" || storeAnnoImg="no"
 
 echo
 echo "---------------------------------------"
@@ -141,7 +145,9 @@ echo "Checking prerequisites..."
 echo
 echo "Unzip:"
 unzip_ok=$(dpkg-query -W --showformat='${Status}\n' unzip|grep "install ok installed")
-echo "$unzip_ok"
+if [ -n "$unzip_ok" ]; then
+	echo "- $unzip_ok"
+fi
 if [ "" == "$unzip_ok" ]; then
   echo "No unzip installed. Setting up unzip with apt-get..."
   if ! output=$(sudo apt-get --yes install unzip); then
@@ -153,7 +159,9 @@ fi
 
 echo "wget:"
 wget_ok=$(dpkg-query -W --showformat='${Status}\n' wget|grep "install ok installed")
-echo "$wget_ok"
+if [ -n "$wget_ok" ]; then
+	echo "- $wget_ok"
+fi
 if [ "" == "$wget_ok" ]; then
   echo "No wget installed. Setting up wget with apt-get..."
   if ! output=$(sudo apt-get --yes install wget); then
@@ -163,11 +171,27 @@ if [ "" == "$wget_ok" ]; then
 	fi	
 fi
 
-if [ "$INST_APILITE" ]; then
+echo "python-pip:"
+pip=$(dpkg-query -W --showformat='${Status}\n' python-pip|grep "install ok installed")
+if [ -n "$pip" ]; then
+	echo "- $pip"
+fi
+if [ "" == "$pip" ]; then
+	echo "python-pip not installed. Installing Debian packages with apt-get."
+	if ! output=$(sudo apt-get --yes install python-pip); then
+		echo "ERROR: failed to install python-pip, cannot continue."
+		printf "EXITING FROM ERROR" > install-outcome.txt
+		exit $?
+	fi
+fi	
+
+if [ ! -z "$INST_APILITE" ] && [ "$INST_APILITE" -gt "0" ]; then
 
 	echo "NodeJS: $node_ok"
 	node_ok=$(dpkg-query -W --showformat='${Status}\n' nodejs|grep "install ok installed")
-	echo "$node_ok"	
+	if [ -n "$node_ok" ]; then
+		echo "- $node_ok"
+	fi
 	if [ "" == "$node_ok" ]; then
 		echo "NodeJS is not installed. Installing Debian packages from NodeSource."
 		echo "This may take a while, hang on..."
@@ -189,7 +213,7 @@ if [ "$INST_APILITE" ]; then
 		echo "WARNING: Installed NodeJS version is < 8, things may not work as expected."
 		echo "         You may need to consider installing a newer version."
 	else
-		echo "NodeJS version: ${node_ver}"
+		echo "- NodeJS version: ${node_ver}"
 	fi
 
 	echo
@@ -283,7 +307,10 @@ if [ ! -z "$INST_ASTROMETRYNET" ] && [ "$INST_ASTROMETRYNET" -gt "0" ]; then
 
 	anet_ok=$(dpkg-query -W --showformat='${Status}\n' astrometry.net|grep "install ok installed")
 	echo
-	echo "Checking for astrometry.net installation: $anet_ok"
+	echo "Checking for astrometry.net installation:"
+	if [ -n "$anet_ok" ]; then
+		echo "- $anet_ok"
+	fi
 	if [ "" == "$anet_ok" ]; then
 		echo "astrometry.net is not installed. Installing Debian packages with apt-get."
 		if ! output=$(sudo apt-get --yes install astrometry.net); then
@@ -292,6 +319,41 @@ if [ ! -z "$INST_ASTROMETRYNET" ] && [ "$INST_ASTROMETRYNET" -gt "0" ]; then
 			exit $?
 		fi	
 	fi
+
+	echo "Checking astropy version, >= 2.0.6 required"
+	
+	wanted_astropy="2.0.6"
+	astropy=$(pip --disable-pip-version-check show astropy|grep Version:|sed -n 's/\(^Version: \)\([a-zA-Z0-9.]\+\)/\2/p')
+	if [ "" == "$pip" ]; then
+		echo "Couldn't detect any version of astropy installed. Installing astropy 2.0.6 with pip."
+		if ! output=$(sudo pip --disable-pip-version-check install astropy==2.0.6); then
+			echo "ERROR: failed to install astropy 2.0.6, cannot continue."
+			printf "EXITING FROM ERROR" > install-outcome.txt
+			exit $?
+		fi
+		echo "Astropy install complete"
+	else
+		if version_gt $astropy $wanted_astropy || [[ "$astropy" == "$wanted_astropy" ]]; then
+			echo "Installed astropy version is $astropy (>= $wanted_astropy), OK."
+		else
+			echo "Detected astropy version $astropy, wanted $wanted_astropy; upgrading to $wanted_astropy..."
+			
+			if ! output=$(sudo pip --disable-pip-version-check uninstall astropy); then
+				echo "ERROR: failed to first uninstall old astropy before installing new version, cannot continue."
+				printf "EXITING FROM ERROR" > install-outcome.txt
+				exit $?
+			fi
+			if ! output=$(sudo pip --disable-pip-version-check install astropy==2.0.6); then
+				echo "ERROR: failed to install astropy 2.0.6, cannot continue."
+				printf "EXITING FROM ERROR" > install-outcome.txt
+				exit $?
+			fi
+			echo "Re-checking version..."
+			astropy=$(pip --disable-pip-version-check show astropy|grep Version:|sed -n 's/\(^Version: \)\([a-zA-Z0-9.]\+\)/\2/p')
+			echo "Astropy installed version is now $astropy"
+		fi
+	fi
+
 fi
 
 if [ ! -z "$INST_INDEXES" ]; then
@@ -384,6 +446,7 @@ echo "======================================================================"
 echo "Installation complete!"
 echo "======================================================================"
 echo
+sleep 1
 read -p "Press any key..." x
 
 exit 0

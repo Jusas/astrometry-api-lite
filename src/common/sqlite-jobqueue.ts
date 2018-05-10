@@ -163,9 +163,15 @@ export class SqliteJobQueue {
             const item = await this.db.get("select * from JobQueue where processing_state = 0 order by created");
             if(item) {
                 const now = datetime.create().now();
-                const stmt = await this.db.prepare(`update JobQueue set processing_state = 1, worker_id = ?, processing_started = ? where id = ${item.id}`);
-                await stmt.run([worker, now]);
+                const stmt = await this.db.prepare(`update JobQueue set processing_state = 1, worker_id = ?, processing_started = ? where id = ${item.id} and processing_state = 0`);
+                const updateResult = await stmt.run([worker, now]);
                 await stmt.finalize();
+                // Concurrency; make sure we're not going to double-process the item if it was
+                // checked out in the meanwhile.
+                if(updateResult.changes == 0) {
+                    console.log(`Unable to reserve work item ${item.id}, item was already reserved.`);
+                    return null;
+                } 
                 item.worker_id = worker;
                 item.processing_state = 1;
                 item.processing_started = now;                

@@ -8,7 +8,7 @@
 !include "strcase.nsh"
 !include "linkopen.nsh"
 
-!define VERSION "v1.1.3"
+!define VERSION "v1.1.5"
 !define APP_VERSION "Astrometry-api-lite ${VERSION}"
 
 Name "Astrometry-api-lite ${VERSION}"
@@ -82,6 +82,7 @@ Var CfgImageScale_Val
 
 Var LinuxInstallDir
 Var InstallSuccess
+Var DidInstallApi
 
 
 Function CheckInstallStatus
@@ -351,6 +352,7 @@ Function SaveConfig
   ;{NSD_GetState} $somecbox $output
 	${If} ${SectionIsSelected} ${SecApi}
 		StrCpy $2 "$2 -l 1"
+		StrCpy $DidInstallApi "1"
 	${Else} 
 		StrCpy $2 "$2 -l 0"
 	${EndIf}
@@ -559,10 +561,12 @@ Function RunBashScript
 		GetDlgItem $0 $HWNDPARENT 1
 		EnableWindow $0 0
 	${Else}
-		${NSD_CreateLabel} 0 0 420 70 "The installation script has been run, and the install log has been written to install-log.txt. Shortcut that launches both the manager and the API has been placed to your desktop. Enjoy!"	
+		${NSD_CreateLabel} 0 0 420 70 "The installation script has been run, and the install log has been written to install-log.txt. If you installed the API, shortcut that launches both the manager and the API has been placed to your desktop. Enjoy!"	
 		Pop $0
-		CreateShortCut "$DESKTOP\Astrometry-api-lite.lnk" "$WINDIR\System32\bash.exe" "-c $\"cd '$LinuxInstallDir' && bash -c ./kill-me.sh && node_modules/.bin/concurrently -p '[{name}]' -n 'Jobs,Api' -c 'yellow.bold,green.bold' 'node dist/manager/main.js' 'node dist/api/server.js'$\"" "$INSTDIR\icon.ico"
-		
+		${If} $DidInstallApi == "1"
+			CreateShortCut "$DESKTOP\Astrometry-api-lite.lnk" "$WINDIR\System32\bash.exe" "-c $\"cd '$LinuxInstallDir' && bash -c ./kill-me.sh && node_modules/.bin/concurrently -p '[{name}]' -n 'Jobs,Api' -c 'yellow.bold,green.bold' 'node dist/manager/main.js' 'node dist/api/server.js'$\"" "$INSTDIR\icon.ico"
+		${EndIf}
+	
 		${NSD_CreateLabel} 0 70 420 40 "You can read more about the application and the Dashboard from the readme (doc/readme.html). Please at least read the $\"Windows 10 primer$\"."
 		Pop $0
 
