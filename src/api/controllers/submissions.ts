@@ -14,9 +14,9 @@ export class SubmissionsController {
 	 * @isInt id
 	 */
   @Get("{id}")
-  async get (id: number): Promise<SubmissionInfoResponse> {
+  async get(id: number): Promise<SubmissionInfoResponse> {
     const status = await Jobs.getStatus(id);
-    if(!status) {
+    if (!status) {
       throw new ApiError("submission not found", 404);
     }
     let started = <any>status.processing_started;
@@ -27,11 +27,11 @@ export class SubmissionsController {
     let jobs = [null];
     let job_calibrations = [];
 
-    if(status.processing_state != ProcessingState.Queued) {
+    if (status.processing_state != ProcessingState.Queued) {
       jobs = [id];
     }
 
-    if(status.processing_state == ProcessingState.Succeeded 
+    if (status.processing_state == ProcessingState.Succeeded
       || status.processing_state == ProcessingState.Failed) {
       job_calibrations = [id];
     }

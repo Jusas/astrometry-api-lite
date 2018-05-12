@@ -1,9 +1,9 @@
 export interface WorkerState {
-	pid: number,
-	cpu: number
+  pid: number,
+  cpu: number
 }
 
 export interface WorkerSystemState {
-	workerManagerRunning: boolean,
-	activeWorkers: WorkerState[]
+  workerManagerRunning: boolean,
+  activeWorkers: WorkerState[]
 }

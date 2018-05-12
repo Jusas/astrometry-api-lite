@@ -1,330 +1,390 @@
 <html>
-	<head>
-		<title>Astrometry-api-lite readme</title>
-		<style>
-			body {
-				font-family: Arial, Helvetica, sans-serif;
-				margin: 1em auto;
-				width: 80%;
-				box-sizing: border-box;
-			}
 
-			h1 {
-				display: inline-block;
-				vertical-align: middle;
-			}
+<head>
+  <title>Astrometry-api-lite readme</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 1em auto;
+      width: 80%;
+      box-sizing: border-box;
+    }
 
-			.logo {
-				vertical-align: middle;
-				margin-right:2em;
-			}
+    h1 {
+      display: inline-block;
+      vertical-align: middle;
+    }
 
-			hr {
-				color: #ccc;
-				height: 2px;
-				border: 0;
-				background: #ccc;
-			}
+    .logo {
+      vertical-align: middle;
+      margin-right: 2em;
+    }
 
-			.content {
-				padding: 1em 0;
-			}
+    hr {
+      color: #ccc;
+      height: 2px;
+      border: 0;
+      background: #ccc;
+    }
 
-			.conf thead tr {
-				background: #ccc;
-			}
+    .content {
+      padding: 1em 0;
+    }
 
-			.conf th {
-				text-align: left;
-				background: beige;
-				padding: 0.25em;
-			}
+    .conf thead tr {
+      background: #ccc;
+    }
 
-			.conf td {
-				padding: 0.25em;
-				border-bottom: 1px dashed #ccc;
-				padding-right: 1em;
-			}
+    .conf th {
+      text-align: left;
+      background: beige;
+      padding: 0.25em;
+    }
 
-			.sign {
-				border-left: 4px solid #ccc;
-				padding-left: 1em;
-			}
+    .conf td {
+      padding: 0.25em;
+      border-bottom: 1px dashed #ccc;
+      padding-right: 1em;
+    }
 
-		</style>
-	</head>
-	<body>
-		<img class="logo" src="minilogo.png" /><h1>Astrometry-api-lite</h1>
-		<hr />
-		<div class="content">
-			<h2>Table of contents</h2>
-			<ul>
-				<li><a href="#overview">Overview</a></li>
-				<li><a href="#win">Windows 10 primer</a></li>
-				<li><a href="#install">Installer</a></li>
-				<li><a href="#conf">Configuration</a></li>
-				<li><a href="#dash">Dashboard</a></li>
-				<li><a href="#perf">Improving solver performance</a></li>
-				<li><a href="#trouble">Troubleshooting and notes</a></li>
-				<li><a href="#source">Source</a></li>
-			</ul>
-		</div>
-		<hr />
-		<div class="content">
-			<h2 id="overview">Overview</h2>
-			<p>
-				Astrometry-api-lite is a NodeJS application bundle that runs an astrometry.net equivalent API on your machine.
-				Since astrometry.net packages require Linux to run the base requirement for running this software is Linux in
-				one form or another.
-			</p>
-			<p>
-				A pure Linux installation (or a VM) is a good choice but all the required software also runs on <b>Windows 10 Subsystem
-				for Linux</b> which means a "pure Linux" is not a necessity, and you can run this API directly from your
-				desktop as you have probably already figured out.
-			</p>
-			<p>
-				The software package consists of three runnables: the <b>API</b>, the <b>Worker Manager</b> and the <b>Workers</b>.
-				The API is the HTTP interface that applications use, the Worker Manager is responsible for spawning workers when
-				there are solver jobs to complete and the Worker runs the solver and saves the results.
-			</p>
-			<h3>Usage</h3>
-			<p>
-				Where ever you would normally enter <b><a href="http://nova.astrometry.net">http://nova.astrometry.net</a></b>, you can now enter the address of your locally running
-				API (by default <b><a href="http://localhost:3000">http://localhost:3000</a></b>). The API behaves like Nova's API would.
-			</p>
-		</div>
-		<hr />
-		<div class="content">
-			<h2 id="win">Windows 10 primer</h2>
-			<p>
-				There are a few things to note about the software running under the Linux Subsystem:
-			</p>
-			<p>
-				<b>Exit properly with CTRL+C</b>. And now for the explanation:<br/>
-				You'll have no problems, as long as the only bash window open is the Astrometry-api-lite window.
-				However if you have multiple bash windows open, there's a snag: when you close the window, the
-				NodeJS processes will still be left running (no clue why - only the node processes do this) so while you have
-				closed the window, the API and the Manager are still running. However
-				if you close the window by pressing <b>CTRL+C</b> the processes will be killed properly. The desktop 
-				shortcut also includes a small kill script that prevents you from accidentally running multiple instances
-				simultaneously.
-				<br/><br/>
-				So as a summary, exit with CTRL+C. However if you're not running any other bash windows, you can simply close
-				the window normally.
-			</p>
-		</div>
-		<hr />
-		<div class="content">
-			<h2 id="install">Installer</h2>
-			<p>
-				The <b>Windows Installer</b> is a tool that you can use with <b>Windows 10 Subsystem for Linux</b>
-				and it sets up everything for you, guided by a familiar user interface. The installer itself is very lean
-				and does not contain anything else than the wizard user interface and the install script itself - everything
-				else gets downloaded from the internet. You'll end up with a single desktop shortcut that starts both the API 
-				and the Worker Manager.
-			</p>
-			<p>
-				The installer can be run multiple times if something fails during the installation of if you need
-				to reconfigure the API. Astrometry.net indexes will be downloaded using resume mechanics, so if a download
-				fails or times out, progress should not be lost. <b>Note that there is no uninstaller available.</b> The installer does not write
-				anything to registry, it only creates the target directory and runs the installation scripts there.
-				So in order to really uninstall it, just delete the files - however this will leave the prerequisites
-				(astrometry.net and nodejs mainly) installed inside the Linux Subsystem, if you wish to remove those
-				you'll need to remove the packages using the bash console with a few apt commands.
-			</p>
-			<p>
-				If you chose to download astrometry.net indexes, they will be stored in your <b>&lt;installation directory&gt;/indexes</b>.
-			</p>
-		</div>
-		<hr />
-		<div class="content">
-			<h2 id="conf">Configuration</h2>
-			<p>A few configuration values can be set for each application.</p>
-			<br/>
-			<h3>dist/api/configuration.json</h3>
-			
-			<table class="conf">
-				<thead>
-					<tr>
-						<th>Key</th><th>Value</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>database</td><td>the path to the SQLite database file where the queue and results are stored</td>
-					</tr>
-					<tr>
-						<td>queueFileUploadDir</td><td>the path where uploaded files are stored</td>
-					</tr>
-					<tr>
-						<td>apiPort</td><td>which port the API http server uses. Note: do not use port 80 (requires root permissions)</td>
-					</tr>
-					<tr>
-						<td>enableSwagger</td><td>enables or disables the swagger UI, accessible at /swagger</td>
-					</tr>
-					<tr>
-						<td>enableDashboard</td><td>enables or disables the dashboard at /dashboard</td>
-					</tr>
-					<tr>
-						<td>enableJobCancellationApi</td><td>enables or disables the job cancellation api, /api/job-control/cancel/{id}. When disabled the control API just returns 403</td>
-					</tr>
-				</tbody>
-			</table>
-			
-			<p></p>
-			<br/>
+    .sign {
+      border-left: 4px solid #ccc;
+      padding-left: 1em;
+    }
+  </style>
+</head>
 
-			<h3>dist/manager/configuration.json</h3>
+<body>
+  <img class="logo" src="minilogo.png" />
+  <h1>Astrometry-api-lite</h1>
+  <hr />
+  <div class="content">
+    <h2>Table of contents</h2>
+    <ul>
+      <li>
+        <a href="#overview">Overview</a>
+      </li>
+      <li>
+        <a href="#win">Windows 10 primer</a>
+      </li>
+      <li>
+        <a href="#install">Installer</a>
+      </li>
+      <li>
+        <a href="#conf">Configuration</a>
+      </li>
+      <li>
+        <a href="#dash">Dashboard</a>
+      </li>
+      <li>
+        <a href="#perf">Improving solver performance</a>
+      </li>
+      <li>
+        <a href="#trouble">Troubleshooting and notes</a>
+      </li>
+      <li>
+        <a href="#source">Source</a>
+      </li>
+    </ul>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="overview">Overview</h2>
+    <p>
+      Astrometry-api-lite is a NodeJS application bundle that runs an astrometry.net equivalent API on your machine. Since astrometry.net
+      packages require Linux to run the base requirement for running this software is Linux in one form or another.
+    </p>
+    <p>
+      A pure Linux installation (or a VM) is a good choice but all the required software also runs on
+      <b>Windows 10 Subsystem for Linux</b> which means a "pure Linux" is not a necessity, and you can run this API directly
+      from your desktop as you have probably already figured out.
+    </p>
+    <p>
+      The software package consists of three runnables: the
+      <b>API</b>, the
+      <b>Worker Manager</b> and the
+      <b>Workers</b>. The API is the HTTP interface that applications use, the Worker Manager is responsible for spawning workers
+      when there are solver jobs to complete and the Worker runs the solver and saves the results.
+    </p>
+    <h3>Usage</h3>
+    <p>
+      Where ever you would normally enter
+      <b>
+        <a href="http://nova.astrometry.net">http://nova.astrometry.net</a>
+      </b>, you can now enter the address of your locally running API (by default
+      <b>
+        <a href="http://localhost:3000">http://localhost:3000</a>
+      </b>). The API behaves like Nova's API would.
+    </p>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="win">Windows 10 primer</h2>
+    <p>
+      There are a few things to note about the software running under the Linux Subsystem:
+    </p>
+    <p>
+      <b>Exit properly with CTRL+C</b>. And now for the explanation:
+      <br/> You'll have no problems, as long as the only bash window open is the Astrometry-api-lite window. However if you have
+      multiple bash windows open, there's a snag: when you close the window, the NodeJS processes will still be left running
+      (no clue why - only the node processes do this) so while you have closed the window, the API and the Manager are still
+      running. However if you close the window by pressing
+      <b>CTRL+C</b> the processes will be killed properly. The desktop shortcut also includes a small kill script that prevents
+      you from accidentally running multiple instances simultaneously.
+      <br/>
+      <br/> So as a summary, exit with CTRL+C. However if you're not running any other bash windows, you can simply close the
+      window normally.
+    </p>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="install">Installer</h2>
+    <p>
+      The
+      <b>Windows Installer</b> is a tool that you can use with
+      <b>Windows 10 Subsystem for Linux</b>
+      and it sets up everything for you, guided by a familiar user interface. The installer itself is very lean and does not contain
+      anything else than the wizard user interface and the install script itself - everything else gets downloaded from the
+      internet. You'll end up with a single desktop shortcut that starts both the API and the Worker Manager.
+    </p>
+    <p>
+      The installer can be run multiple times if something fails during the installation of if you need to reconfigure the API.
+      Astrometry.net indexes will be downloaded using resume mechanics, so if a download fails or times out, progress should
+      not be lost.
+      <b>Note that there is no uninstaller available.</b> The installer does not write anything to registry, it only creates
+      the target directory and runs the installation scripts there. So in order to really uninstall it, just delete the files
+      - however this will leave the prerequisites (astrometry.net and nodejs mainly) installed inside the Linux Subsystem,
+      if you wish to remove those you'll need to remove the packages using the bash console with a few apt commands.
+    </p>
+    <p>
+      If you chose to download astrometry.net indexes, they will be stored in your
+      <b>&lt;installation directory&gt;/indexes</b>.
+    </p>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="conf">Configuration</h2>
+    <p>A few configuration values can be set for each application.</p>
+    <br/>
+    <h3>dist/api/configuration.json</h3>
 
-			<table class="conf">
-				<thead>
-					<tr>
-						<th>Key</th><th>Value</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>database</td><td>the path to the SQLite database file where the queue and results are stored</td>
-					</tr>
-					<tr>
-						<td>worker</td><td>the path to the worker application</td>
-					</tr>
-					<tr>
-						<td>maxConcurrentWorkers</td><td>how many concurrent workers are allowed to be spawned</td>
-					</tr>						
-				</tbody>
-			</table>
+    <table class="conf">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>database</td>
+          <td>the path to the SQLite database file where the queue and results are stored</td>
+        </tr>
+        <tr>
+          <td>queueFileUploadDir</td>
+          <td>the path where uploaded files are stored</td>
+        </tr>
+        <tr>
+          <td>apiPort</td>
+          <td>which port the API http server uses. Note: do not use port 80 (requires root permissions)</td>
+        </tr>
+        <tr>
+          <td>enableSwagger</td>
+          <td>enables or disables the swagger UI, accessible at /swagger</td>
+        </tr>
+        <tr>
+          <td>enableDashboard</td>
+          <td>enables or disables the dashboard at /dashboard</td>
+        </tr>
+        <tr>
+          <td>enableJobCancellationApi</td>
+          <td>enables or disables the job cancellation api, /api/job-control/cancel/{id}. When disabled the control API just
+            returns 403
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-			<p></p>
-			<br/>
+    <p></p>
+    <br/>
 
-			<h3>dist/worker/configuration.json</h3>
+    <h3>dist/manager/configuration.json</h3>
 
-			<table class="conf">
-				<thead>
-					<tr>
-						<th>Key</th><th>Value</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>database</td><td>the path to the SQLite database file where the queue and results are stored</td>
-					</tr>
-					<tr>
-						<td>queueFileUploadDir</td><td>the path where uploaded files are stored</td>
-					</tr>
-					<tr>
-						<td>tempDir</td><td>the path where (temporary) result files produced by the solver are stored</td>
-					</tr>
-					<tr>
-						<td>cleanTempUponCompletion</td><td>clean up temp files after solver finishes (default: true)</td>
-					</tr>
-					<tr>
-						<td>computationTimeLimit</td><td>the time limit for the solver, jobs that last longer will be aborted</td>
-					</tr>
-					<tr>
-						<td>skipJobsOlderThanSeconds</td><td>the worker will abandon jobs that are older than this value in seconds (useful if the API has piled up jobs but the manager has been down, you don't want to start solving old jobs)</td>
-					</tr>
-					<tr>
-						<td>storeObjsImages</td><td>true or false, whether or not you want to store the resulting object images for each job. Stores them in the job database in base64 format.</td>
-					</tr>
-					<tr>
-						<td>storeNgcImages</td><td>true or false, whether or not you want to store the resulting NGC (annotation) images for each job. Stores them in the job database in base64 format.</td>
-					</tr>
-					<tr>
-						<td>imageScale</td><td>Image scaling to apply to the saved images (if you want to save space)</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<hr />
-		<div class="content">
-			<h2 id="dash">Dashboard</h2>
-			<p>
-				The Dashboard, available at <a href="http://localhost:3000/dashboard">http://localhost:3000/dashboard</a> by default
-				is a simple dashboard that displays the latest jobs, their statuses and the status of your Worker Manager and how
-				many Workers are currently running. The dashboard automatically refreshes the data every 5 seconds.
-			</p>
-			<img src="dashboard.png" />
-			<p>
-				If you have configured the Workers to store object/annotation images from the results, you can click on the thumbnails
-				from each job to view them.
-			</p>
-			<p>
-				Additionally, if you've configured the API with <b>enableJobCancellationApi: true</b> you are also able to cancel
-				running jobs from the dashboard - useful since solver tasks can take a lot of time to finish, and you don't want
-				to wait for a botched job.
-			</p>
-		</div>		
-		<hr />
-		<div class="content">
-			<h2 id="perf">Improving solver performance</h2>
-			<p>
-				You may notice that the solver isn't as fast as you had hoped; there are a few factors that affect it.
-				<ul>
-					<li>Your CPU and memory</li>
-					<li>Whether you have HDD or SSD</li>
-					<li>Windows Defender settings</li>
-				</ul>
-			</p>
-			<p>
-				Installing the software to SSD including the astrometry.net indexes will most likely greatly speed up the solving process.
-				Since the solver accesses a lot of large files, this is pretty much a no-brainer, the faster it can read them the better.
-			</p>
-			<p>
-				Secondly, Windows Defender real-time protection can be rather aggressive and does extends its operation to the Linux Subsystem.
-				In some cases a speedup of maybe up to 10x can be achieved when the index directory, Linux Subsystem directory and the
-				astrometry-api-lite installation directory are added to the Defender exclusion list.
-			</p>
-			<img src="defender-settings.png">
-		</div>		
-		<hr />
-		<div class="content">
-			<h2 id="trouble">Troubleshooting</h2>
-			<p>
-				<b>First of all, important note:</b> do not try to run multiple parallel instances of the API or the Worker Manager!
-				If you're using the Windows 10 shortcut, then you have no need to worry - the startup includes a kill script that will only allow
-				running a single instance of each process.
-				<br/>
-				Running multiple instances may lead to job database corruption and the maxConcurrentWorkers setting loses all meaning as each manager only tracks
-				its own child processes.
-			</p>
-			<p>
-				Secondly, as mentioned in the Windows 10 primer, if you terminate the bash window, but you have other bash windows still open, <b>the processes will not terminate</b>!
-				This is important to note! Only when the last bash window is closed, all the Linux subsystem processes will die.
-				<b>So if you have a bash window open when you close the Astrometry-api-lite window, the processes will continue to run.</b>				
-			</p>
-			<p>
-				<b>Q:</b> I'm getting an SQLITE error claiming my database is corrupted, what to do?
-				<br/>
-				<b>A:</b> This may happen when multiple processes mess with the database without cleanly
-				completing transactions. If the database doesn't seem to recover, stop the processes 
-				(In Win10 close the bash window, open a new bash from start menu, and run <i>killall -9 node</i> just to be sure), 
-				copy a clean database to replace it from <i>src/common/workdb-template.db</i> and start the
-				programs again.
-				<p>
-					Alternatively, once you're sure the process is dead, open a bash shell to the installation directory and run: <br/>
-					<blockquote>
-						<pre>npm run reset-db</pre>
-					</blockquote>
-					This will in fact do the same thing as copying the workdb-template.db manually.
-				</p>
-			</p>			
-		</div>	
-		<hr />
-		<div class="content">
-			<h2 id="source">Source</h2>
-			<p>
-				This software is open source, and can be downloaded in its entirety from Github: <a href="https://github.com/Jusas/astrometry-api-lite">https://github.com/Jusas/astrometry-api-lite</a>				
-			</p>
-			<p>
-				In fact, the Windows installer downloads the whole source package and runs the TypeScript compiler to compile the runnables - 
-				so you already have the source on your machine. The compiled runnables are located in the dist/ directory, while most of the
-				sources are in the src/ directory.
-			</p><p>&nbsp;</p>
-			<p>Thank you for choosing an open source product! :-)</p>
-			<p class="sign"><i>Jussi Saarivirta</i>
-			<br/><i>jusasi@gmail.com</i></p>
-		</div>	
-	</body>
+    <table class="conf">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>database</td>
+          <td>the path to the SQLite database file where the queue and results are stored</td>
+        </tr>
+        <tr>
+          <td>worker</td>
+          <td>the path to the worker application</td>
+        </tr>
+        <tr>
+          <td>maxConcurrentWorkers</td>
+          <td>how many concurrent workers are allowed to be spawned</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p></p>
+    <br/>
+
+    <h3>dist/worker/configuration.json</h3>
+
+    <table class="conf">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>database</td>
+          <td>the path to the SQLite database file where the queue and results are stored</td>
+        </tr>
+        <tr>
+          <td>queueFileUploadDir</td>
+          <td>the path where uploaded files are stored</td>
+        </tr>
+        <tr>
+          <td>tempDir</td>
+          <td>the path where (temporary) result files produced by the solver are stored</td>
+        </tr>
+        <tr>
+          <td>cleanTempUponCompletion</td>
+          <td>clean up temp files after solver finishes (default: true)</td>
+        </tr>
+        <tr>
+          <td>computationTimeLimit</td>
+          <td>the time limit for the solver, jobs that last longer will be aborted</td>
+        </tr>
+        <tr>
+          <td>skipJobsOlderThanSeconds</td>
+          <td>the worker will abandon jobs that are older than this value in seconds (useful if the API has piled up jobs but
+            the manager has been down, you don't want to start solving old jobs)</td>
+        </tr>
+        <tr>
+          <td>storeObjsImages</td>
+          <td>true or false, whether or not you want to store the resulting object images for each job. Stores them in the job
+            database in base64 format.</td>
+        </tr>
+        <tr>
+          <td>storeNgcImages</td>
+          <td>true or false, whether or not you want to store the resulting NGC (annotation) images for each job. Stores them
+            in the job database in base64 format.</td>
+        </tr>
+        <tr>
+          <td>imageScale</td>
+          <td>Image scaling to apply to the saved images (if you want to save space)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="dash">Dashboard</h2>
+    <p>
+      The Dashboard, available at
+      <a href="http://localhost:3000/dashboard">http://localhost:3000/dashboard</a> by default is a simple dashboard that displays the latest jobs, their statuses
+      and the status of your Worker Manager and how many Workers are currently running. The dashboard automatically refreshes
+      the data every 5 seconds.
+    </p>
+    <img src="dashboard.png" />
+    <p>
+      If you have configured the Workers to store object/annotation images from the results, you can click on the thumbnails from
+      each job to view them.
+    </p>
+    <p>
+      Additionally, if you've configured the API with
+      <b>enableJobCancellationApi: true</b> you are also able to cancel running jobs from the dashboard - useful since solver
+      tasks can take a lot of time to finish, and you don't want to wait for a botched job.
+    </p>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="perf">Improving solver performance</h2>
+    <p>
+      You may notice that the solver isn't as fast as you had hoped; there are a few factors that affect it.
+      <ul>
+        <li>Your CPU and memory</li>
+        <li>Whether you have HDD or SSD</li>
+        <li>Windows Defender settings</li>
+      </ul>
+    </p>
+    <p>
+      Installing the software to SSD including the astrometry.net indexes will most likely greatly speed up the solving process.
+      Since the solver accesses a lot of large files, this is pretty much a no-brainer, the faster it can read them the better.
+    </p>
+    <p>
+      Secondly, Windows Defender real-time protection can be rather aggressive and does extends its operation to the Linux Subsystem.
+      In some cases a speedup of maybe up to 10x can be achieved when the index directory, Linux Subsystem directory and
+      the astrometry-api-lite installation directory are added to the Defender exclusion list.
+    </p>
+    <img src="defender-settings.png">
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="trouble">Troubleshooting</h2>
+    <p>
+      <b>First of all, important note:</b> do not try to run multiple parallel instances of the API or the Worker Manager! If
+      you're using the Windows 10 shortcut, then you have no need to worry - the startup includes a kill script that will
+      only allow running a single instance of each process.
+      <br/> Running multiple instances may lead to job database corruption and the maxConcurrentWorkers setting loses all meaning
+      as each manager only tracks its own child processes.
+    </p>
+    <p>
+      Secondly, as mentioned in the Windows 10 primer, if you terminate the bash window, but you have other bash windows still
+      open,
+      <b>the processes will not terminate</b>! This is important to note! Only when the last bash window is closed, all the
+      Linux subsystem processes will die.
+      <b>So if you have a bash window open when you close the Astrometry-api-lite window, the processes will continue to run.</b>
+    </p>
+    <p>
+      <b>Q:</b> I'm getting an SQLITE error claiming my database is corrupted, what to do?
+      <br/>
+      <b>A:</b> This may happen when multiple processes mess with the database without cleanly completing transactions. If the
+      database doesn't seem to recover, stop the processes (In Win10 close the bash window, open a new bash from start menu,
+      and run
+      <i>killall -9 node</i> just to be sure), copy a clean database to replace it from
+      <i>src/common/workdb-template.db</i> and start the programs again.
+      <p>
+        Alternatively, once you're sure the process is dead, open a bash shell to the installation directory and run:
+        <br/>
+        <blockquote>
+          <pre>npm run reset-db</pre>
+        </blockquote>
+        This will in fact do the same thing as copying the workdb-template.db manually.
+      </p>
+    </p>
+  </div>
+  <hr />
+  <div class="content">
+    <h2 id="source">Source</h2>
+    <p>
+      This software is open source, and can be downloaded in its entirety from Github:
+      <a href="https://github.com/Jusas/astrometry-api-lite">https://github.com/Jusas/astrometry-api-lite</a>
+    </p>
+    <p>
+      In fact, the Windows installer downloads the whole source package and runs the TypeScript compiler to compile the runnables
+      - so you already have the source on your machine. The compiled runnables are located in the dist/ directory, while
+      most of the sources are in the src/ directory.
+    </p>
+    <p>&nbsp;</p>
+    <p>Thank you for choosing an open source product! :-)</p>
+    <p class="sign">
+      <i>Jussi Saarivirta</i>
+      <br/>
+      <i>jusasi@gmail.com</i>
+    </p>
+  </div>
+</body>
+
 </html>

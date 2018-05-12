@@ -14,9 +14,9 @@ export class JobControlController {
 	 * @isInt id
 	 */
   @Get("cancel/{id}")
-  async killJob (id: number): Promise<boolean> {
+  async killJob(id: number): Promise<boolean> {
     const status = await Jobs.tryCancelJob(id);
     return status;
-	}
+  }
 
 }

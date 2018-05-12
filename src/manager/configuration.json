@@ -1,5 +1,5 @@
 {
-	"database": "dist/workdb.db",
-	"worker": "dist/worker/main.js",
-	"maxConcurrentWorkers": 2
+  "database": "dist/workdb.db",
+  "worker": "dist/worker/main.js",
+  "maxConcurrentWorkers": 2
 }

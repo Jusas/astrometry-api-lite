@@ -228,6 +228,9 @@ if [ ! -z "$INST_APILITE" ] && [ "$INST_APILITE" -gt "0" ]; then
 	echo
 	echo "Unzipping astrometry-api-lite"
 	unzip -q astrometry-api-lite.zip
+	rm -rf src
+	rm -rf doc
+	rm -rf installer
 	mv astrometry-api-lite-${RELEASE_VER}/* .
 	rm -rf astrometry-api-lite-${RELEASE_VER}
 	rm astrometry-api-lite.zip

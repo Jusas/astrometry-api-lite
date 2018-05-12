@@ -8,22 +8,22 @@ import { ResultImageType } from "../../common/models/job";
 export class ResultImageController {
 
   @Get("annotation/{id}")
-  async getAnnotationImage (id: number): Promise<string> {
-		const data = await Jobs.getResultImage(id, ResultImageType.NgcImage);
-		if(!data) {
-			throw new ApiError("image not found", 404);
-		}
+  async getAnnotationImage(id: number): Promise<string> {
+    const data = await Jobs.getResultImage(id, ResultImageType.NgcImage);
+    if (!data) {
+      throw new ApiError("image not found", 404);
+    }
 
-		return data;
-	}
+    return data;
+  }
 
-	@Get("objects/{id}")
-  async getObjectImage (id: number): Promise<string> {
-		const data = await Jobs.getResultImage(id, ResultImageType.ObjectsImage);
-		if(!data) {
-			throw new ApiError("image not found", 404);
-		}
+  @Get("objects/{id}")
+  async getObjectImage(id: number): Promise<string> {
+    const data = await Jobs.getResultImage(id, ResultImageType.ObjectsImage);
+    if (!data) {
+      throw new ApiError("image not found", 404);
+    }
 
-		return data;
-	}
+    return data;
+  }
 }

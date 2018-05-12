@@ -13,58 +13,58 @@ const psList = require("ps-list");
 
 let lastStatusRequest = 0;
 let cachedWorkerSystemState: WorkerSystemState = {
-	activeWorkers: [],
-	workerManagerRunning: false
+  activeWorkers: [],
+  workerManagerRunning: false
 };
 
 @Route("api/stats")
 export class StatsController {
 
-	@Get("supports")
-	async getSupportData (): Promise<ApiSupports> {
-		let supports: ApiSupports = {
-			jobCancellationSupported: false
-		};
-		const config = configuration();
-		console.log("config", config);
-		if(config["enableJobCancellationApi"]) {
-			supports.jobCancellationSupported = true;
-		}
-		return supports;
-	}
+  @Get("supports")
+  async getSupportData(): Promise<ApiSupports> {
+    let supports: ApiSupports = {
+      jobCancellationSupported: false
+    };
+    const config = configuration();
+    console.log("config", config);
+    if (config["enableJobCancellationApi"]) {
+      supports.jobCancellationSupported = true;
+    }
+    return supports;
+  }
 
   @Get("latest")
-  async getLatestJobs (): Promise<JobQueueEntryWithThumbs[]> {
+  async getLatestJobs(): Promise<JobQueueEntryWithThumbs[]> {
     const latestJobs = await Jobs.getLatestJobs(20);
-		return latestJobs;
-	}
-	
-	@Get("workers")
-	async getWorkerStates (): Promise<WorkerSystemState> {
+    return latestJobs;
+  }
 
-		const now = datetime.create().now();
-		if(now - lastStatusRequest <= 2000) {
-			return cachedWorkerSystemState;
-		}
+  @Get("workers")
+  async getWorkerStates(): Promise<WorkerSystemState> {
 
-		const processes = await psList();
-		const workerRegex = /dist\/worker\/main\.js/;
-		const managerRegex = /dist\/manager\/main\.js/;
+    const now = datetime.create().now();
+    if (now - lastStatusRequest <= 2000) {
+      return cachedWorkerSystemState;
+    }
 
-		const workers = processes.filter( (proc) => proc.name == "node" && workerRegex.test(proc.cmd));
-		const managers = processes.filter( (proc) => proc.name == "node" && managerRegex.test(proc.cmd));
-		const results = workers.map( (proc) => {
-			return {
-				pid: proc.pid,
-				cpu: proc.cpu
-			}
-		});
-		cachedWorkerSystemState = {
-			activeWorkers: results,
-			workerManagerRunning: managers.length > 0
-		};
-		lastStatusRequest = datetime.create().now();
-		return cachedWorkerSystemState;
-	}
+    const processes = await psList();
+    const workerRegex = /dist\/worker\/main\.js/;
+    const managerRegex = /dist\/manager\/main\.js/;
+
+    const workers = processes.filter((proc) => proc.name == "node" && workerRegex.test(proc.cmd));
+    const managers = processes.filter((proc) => proc.name == "node" && managerRegex.test(proc.cmd));
+    const results = workers.map((proc) => {
+      return {
+        pid: proc.pid,
+        cpu: proc.cpu
+      }
+    });
+    cachedWorkerSystemState = {
+      activeWorkers: results,
+      workerManagerRunning: managers.length > 0
+    };
+    lastStatusRequest = datetime.create().now();
+    return cachedWorkerSystemState;
+  }
 
 }

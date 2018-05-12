@@ -10,132 +10,132 @@ const fs = require('fs');
 
 export async function queue(fileInfo: JobFileInfo, parameters: JobParams): Promise<CreatedJobEntry> {
 
-	const started = datetime.create().now();
-	const finished = started;
-	const dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
+  const started = datetime.create().now();
+  const finished = started;
+  const dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
 
-	const itemId = await q.createWorkItem(parameters, fileInfo, 10);
-	await q.release();
-	if(itemId == -1) {
-		throw new ApiError("Could not create a new work item into queue", 500);
-	}
+  const itemId = await q.createWorkItem(parameters, fileInfo, 10);
+  await q.release();
+  if (itemId == -1) {
+    throw new ApiError("Could not create a new work item into queue", 500);
+  }
 
-	const res: CreatedJobEntry = {
-		id: itemId,
-		hash: null
-	};
-	return res;
+  const res: CreatedJobEntry = {
+    id: itemId,
+    hash: null
+  };
+  return res;
 }
 
 export async function getStatus(id: number): Promise<JobStatus> {
 
-	let dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
-		
-	const item = await q.getWorkItem(id, 15);
-	await q.release();
-	if(!item) {
-		throw new ApiError("Work item not found", 404);
-	}
-	
-	var result: JobStatus = {
-		id: id,
-		processing_started: item.processing_started || null,
-		processing_finished: item.processing_finished || null,
-		processing_state: item.processing_state
-	}
+  let dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
 
-	return result;
+  const item = await q.getWorkItem(id, 15);
+  await q.release();
+  if (!item) {
+    throw new ApiError("Work item not found", 404);
+  }
+
+  var result: JobStatus = {
+    id: id,
+    processing_started: item.processing_started || null,
+    processing_finished: item.processing_finished || null,
+    processing_state: item.processing_state
+  }
+
+  return result;
 }
 
 export async function getCalibrationData(id: number): Promise<JobCalibrationResultData> {
-	
-	let dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
-	
-	const item = await q.getWorkItem(id, 15);
-	await q.release();
-	if(!item) {
-		throw new ApiError("Work item not found", 404);
-	}
 
-	return {
-		result_dec: item.result_dec,
-		result_orientation: item.result_orientation,
-		result_parity: item.result_parity,
-		result_pixscale: item.result_pixscale,
-		result_ra: item.result_ra,
-		result_radius: item.result_radius
-	};
+  let dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
+
+  const item = await q.getWorkItem(id, 15);
+  await q.release();
+  if (!item) {
+    throw new ApiError("Work item not found", 404);
+  }
+
+  return {
+    result_dec: item.result_dec,
+    result_orientation: item.result_orientation,
+    result_parity: item.result_parity,
+    result_pixscale: item.result_pixscale,
+    result_ra: item.result_ra,
+    result_radius: item.result_radius
+  };
 
 }
 
 export async function getFullData(id: number): Promise<JobQueueEntry> {
-	
-	let dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
-	
-	const item = await q.getWorkItem(id, 15);
-	await q.release();
 
-	if(!item) {
-		throw new ApiError("Work item not found", 404);
-	}
+  let dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
 
-	return item;
-	
+  const item = await q.getWorkItem(id, 15);
+  await q.release();
+
+  if (!item) {
+    throw new ApiError("Work item not found", 404);
+  }
+
+  return item;
+
 }
 
 export async function getLatestJobs(count: number): Promise<JobQueueEntryWithThumbs[]> {
-		
-	let dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
-	
-	const items = await q.getLatestWorkItems(count, 15);
-	await q.release();
 
-	return items;
+  let dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
+
+  const items = await q.getLatestWorkItems(count, 15);
+  await q.release();
+
+  return items;
 }
 
 export async function getResultImage(id: number, imgType: ResultImageType): Promise<string> {
-	
-	let dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
-	
-	const img = await q.getWorkItemResultImage(id, imgType, 15);
-	await q.release();
 
-	return img;
+  let dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
+
+  const img = await q.getWorkItemResultImage(id, imgType, 15);
+  await q.release();
+
+  return img;
 }
 
 export async function tryCancelJob(id: number): Promise<boolean> {
 
-	let dbFile = configuration().database;
-	const q = new SqliteJobQueue(dbFile);
-	
-	const item = await q.getWorkItem(id, 15);
-	if(item) {
-		let didCancel = false;
-		try {
-			if(item.processing_state == 0) {
-				await q.trySetWorkItemFailed(id, "canceled by request", 15);
-				didCancel = true;
-			}
-			else if(item.processing_state == 1) {
-				await q.trySetWorkItemCanceled(id, 15);
-				didCancel = true;
-			}
-		}
-		catch(err) {
-			didCancel = false;
-		}
-		finally {
-			q.release();
-		}
-		
-		return didCancel;
-	}
+  let dbFile = configuration().database;
+  const q = new SqliteJobQueue(dbFile);
 
-	return false;
+  const item = await q.getWorkItem(id, 15);
+  if (item) {
+    let didCancel = false;
+    try {
+      if (item.processing_state == 0) {
+        await q.trySetWorkItemFailed(id, "canceled by request", 15);
+        didCancel = true;
+      }
+      else if (item.processing_state == 1) {
+        await q.trySetWorkItemCanceled(id, 15);
+        didCancel = true;
+      }
+    }
+    catch (err) {
+      didCancel = false;
+    }
+    finally {
+      q.release();
+    }
+
+    return didCancel;
+  }
+
+  return false;
 }

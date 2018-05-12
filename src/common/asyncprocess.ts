@@ -5,15 +5,15 @@ import * as treekill from "tree-kill";
 const BufferList = require("bl")
 
 export let spawn = (command: string, args: string[], cancellationCheckFn?: () => Promise<boolean>, stdoutStream?: WriteStream, stderrStream?: WriteStream) => {
-  const child = cproc.spawn(command, args, {detached: false});
+  const child = cproc.spawn(command, args, { detached: false });
   console.log("Spawned pid " + child.pid);
   const bl: string[] = [];
 
   if (child.stdout) {
-    if(stdoutStream) {
+    if (stdoutStream) {
       child.stdout.pipe(stdoutStream);
     }
-    if(stderrStream) {
+    if (stderrStream) {
       child.stderr.pipe(stderrStream);
     }
     child.stdout.on("data", data => {
@@ -27,17 +27,17 @@ export let spawn = (command: string, args: string[], cancellationCheckFn?: () =>
   }
 
   const promise = new Promise<any>((resolve, reject) => {
-    
+
     let intervalRun = null;
-    if(cancellationCheckFn) {
-      intervalRun = setInterval( () => {
+    if (cancellationCheckFn) {
+      intervalRun = setInterval(() => {
         cancellationCheckFn().then(value => {
-          if(!value) {
+          if (!value) {
             console.log("Cancellation requested, killing the process, id " + child.pid);
-            
+
             // process.kill(child.pid, "SIGKILL");
             treekill(child.pid, "SIGKILL");
-            if(intervalRun) {
+            if (intervalRun) {
               clearInterval(intervalRun);
             }
           }
@@ -46,7 +46,7 @@ export let spawn = (command: string, args: string[], cancellationCheckFn?: () =>
     }
 
     child.on("error", (reason) => {
-      if(intervalRun) {
+      if (intervalRun) {
         clearInterval(intervalRun);
       }
       console.error("Child process error: ", reason);
@@ -54,7 +54,7 @@ export let spawn = (command: string, args: string[], cancellationCheckFn?: () =>
     });
 
     child.on("exit", (code) => {
-      if(intervalRun) {
+      if (intervalRun) {
         clearInterval(intervalRun);
       }
       if (code === 0) {

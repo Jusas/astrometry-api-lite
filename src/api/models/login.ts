@@ -1,13 +1,13 @@
 export interface LoginRequestWrapper {
-	"request-json": LoginRequest
+  "request-json": LoginRequest
 }
 
 export interface LoginRequest {
-	apikey: string
+  apikey: string
 }
 
 export interface LoginResponse {
-	status: string,
-	message: string,
-	session: string
+  status: string,
+  message: string,
+  session: string
 }

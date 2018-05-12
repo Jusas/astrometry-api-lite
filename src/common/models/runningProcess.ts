@@ -1,4 +1,4 @@
 export interface RunningProcess {
-    promise: Promise<any>,
-    id: string
+  promise: Promise<any>,
+  id: string
 };

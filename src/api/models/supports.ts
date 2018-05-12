@@ -1,3 +1,3 @@
 export interface ApiSupports {
-	jobCancellationSupported: boolean
+  jobCancellationSupported: boolean
 }

@@ -9,26 +9,26 @@ import * as urlValidation from "valid-url";
 export class UrlUploadController {
 
   @Post()
-  async postUploadUrl (@Body() model: UrlUploadRequestWrapper): Promise<UploadResponse> {		
-				
-		const u = model["request-json"].url;
-		if(!urlValidation.isHttpsUri(u) && !urlValidation.isHttpUri(u)) {
-			throw new Error("url must be a valid http or https url");
-		}
+  async postUploadUrl(@Body() model: UrlUploadRequestWrapper): Promise<UploadResponse> {
 
-		const fileInfo: JobFileInfo = {
-			url: u
-		};
+    const u = model["request-json"].url;
+    if (!urlValidation.isHttpsUri(u) && !urlValidation.isHttpUri(u)) {
+      throw new Error("url must be a valid http or https url");
+    }
 
-		const queued = await Jobs.queue(fileInfo, model["request-json"]);
-		const result: UploadResponse = {
-			hash: queued.hash,
-			status: UploadProcessingStatus.success,
-			subid: queued.id
-		};
+    const fileInfo: JobFileInfo = {
+      url: u
+    };
 
-		return result;
-    
+    const queued = await Jobs.queue(fileInfo, model["request-json"]);
+    const result: UploadResponse = {
+      hash: queued.hash,
+      status: UploadProcessingStatus.success,
+      subid: queued.id
+    };
+
+    return result;
+
   }
 
 }
