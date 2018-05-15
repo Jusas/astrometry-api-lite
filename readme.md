@@ -2,7 +2,12 @@
 
 A lite version of the Astrometry.net Nova API built with node.js. Its purpose is to provide an alternative lightweight API to the Astrometry.net full site and suite.
 
-## Latest version: v1.1.5
+## Latest version: v1.1.6
+
+- Fixed the installer.sh to run 'apt-get update' before attempting to install packages.
+- Source code tidyness: all line endings converted from CRLF to LF and indentations converted to two spaces.
+
+## Version v1.1.5
 
 - Fixes to uploads in FITS format; the installer now checks that your astropy package is up to date to overcome the FITS processing bug with older astropy versions
 - Fix to possible work item double-checkout bug

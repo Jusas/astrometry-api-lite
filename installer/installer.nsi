@@ -8,7 +8,7 @@
 !include "strcase.nsh"
 !include "linkopen.nsh"
 
-!define VERSION "v1.1.5"
+!define VERSION "v1.1.6"
 !define APP_VERSION "Astrometry-api-lite ${VERSION}"
 
 Name "Astrometry-api-lite ${VERSION}"

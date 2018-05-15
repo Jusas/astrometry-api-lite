@@ -51,8 +51,8 @@ function update_apt() {
   fi
 }
 
-# v1.1.5 release.
-RELEASE_VER="1.1.5"
+# v1.1.6 release.
+RELEASE_VER="1.1.6"
 SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/v${RELEASE_VER}.zip"
 
 INST_APILITE=
