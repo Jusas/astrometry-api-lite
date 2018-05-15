@@ -39,6 +39,18 @@ function version_gt() {
 	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
+function update_apt() {
+  if [ "$APT_UPDATED" == "0" ]; then
+    echo "Running 'sudo apt-get update' to make sure package list is up to date..."
+    if ! output=$(sudo apt-get update); then
+      echo "ERROR: failed to run 'sudo apt-get update', cannot continue."
+      printf "EXITING FROM ERROR" > install-outcome.txt
+      exit $?
+    fi
+    APT_UPDATED=1
+  fi
+}
+
 # v1.1.5 release.
 RELEASE_VER="1.1.5"
 SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/v${RELEASE_VER}.zip"
@@ -55,6 +67,8 @@ INST_MAXJOBS=
 INST_STORE_OBJIMG=
 INST_STORE_ANNOTATIONS=
 INST_IMG_SCALE=
+
+APT_UPDATED=0
 
 if [ "$1" == "--help" ]; then
 	usage
@@ -150,11 +164,13 @@ if [ -n "$unzip_ok" ]; then
 fi
 if [ "" == "$unzip_ok" ]; then
   echo "No unzip installed. Setting up unzip with apt-get..."
+  update_apt
   if ! output=$(sudo apt-get --yes install unzip); then
 		echo "ERROR: unzip install failed, cannot continue."
 		printf "EXITING FROM ERROR" > install-outcome.txt
-		exit $?
+		exit $?    
 	fi	
+  echo "- unzip installed OK"
 fi
 
 echo "wget:"
@@ -164,11 +180,13 @@ if [ -n "$wget_ok" ]; then
 fi
 if [ "" == "$wget_ok" ]; then
   echo "No wget installed. Setting up wget with apt-get..."
+  update_apt
   if ! output=$(sudo apt-get --yes install wget); then
 		echo "ERROR: wget install failed, cannot continue."
 		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi	
+  echo "- wget installed OK"
 fi
 
 echo "python-pip:"
@@ -178,11 +196,13 @@ if [ -n "$pip" ]; then
 fi
 if [ "" == "$pip" ]; then
 	echo "python-pip not installed. Installing Debian packages with apt-get."
+  update_apt
 	if ! output=$(sudo apt-get --yes install python-pip); then
 		echo "ERROR: failed to install python-pip, cannot continue."
 		printf "EXITING FROM ERROR" > install-outcome.txt
 		exit $?
 	fi
+  echo "- python-pip installed OK"
 fi	
 
 if [ ! -z "$INST_APILITE" ] && [ "$INST_APILITE" -gt "0" ]; then
@@ -200,11 +220,13 @@ if [ ! -z "$INST_APILITE" ] && [ "$INST_APILITE" -gt "0" ]; then
 			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi
+    echo "- nodejs setup fetch OK"
 		if ! output=$(sudo apt-get install -y nodejs); then
 			echo "ERROR: failed to install NodeJS, cannot continue."
 			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi
+    echo "- nodejs install OK"
 	fi
 
 	node_ver=$(dpkg-query -W --showformat='${source:Version}\n' nodejs)
@@ -316,11 +338,13 @@ if [ ! -z "$INST_ASTROMETRYNET" ] && [ "$INST_ASTROMETRYNET" -gt "0" ]; then
 	fi
 	if [ "" == "$anet_ok" ]; then
 		echo "astrometry.net is not installed. Installing Debian packages with apt-get."
+    update_apt
 		if ! output=$(sudo apt-get --yes install astrometry.net); then
 			echo "ERROR: failed to install astrometry.net, cannot continue."
 			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi	
+    echo "- astrometry.net install OK"
 	fi
 
 	echo "Checking astropy version, >= 2.0.6 required"
@@ -334,7 +358,7 @@ if [ ! -z "$INST_ASTROMETRYNET" ] && [ "$INST_ASTROMETRYNET" -gt "0" ]; then
 			printf "EXITING FROM ERROR" > install-outcome.txt
 			exit $?
 		fi
-		echo "Astropy install complete"
+		echo "- astropy install OK"
 	else
 		if version_gt $astropy $wanted_astropy || [[ "$astropy" == "$wanted_astropy" ]]; then
 			echo "Installed astropy version is $astropy (>= $wanted_astropy), OK."
