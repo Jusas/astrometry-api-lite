@@ -7,5 +7,7 @@
   "skipJobsOlderThanSeconds": 900,
   "storeObjsImages": true,
   "storeNgcImages": true,
-  "imageScale": 0.5
+  "imageScale": 0.5,
+  "sigma": 0,
+  "depth": 0
 }

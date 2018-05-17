@@ -323,6 +323,12 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
   if (queueEntry.p_positional_error) {
     params.push(...["--pixel-error", queueEntry.p_positional_error]);
   }
+  if(config["depth"] != undefined && config["depth"] != null && config["depth"] > 0) {
+    params.push(...["--depth", config["depth"]]);
+  }
+  if(config["sigma"] != undefined && config["sigma"] != null && config["sigma"] > 0) {
+    params.push(...["--sigma", config["sigma"]]);
+  }
 
   const jobSolverTmpDir = path.join(outDir, "solver-temp");
   if (!fs.existsSync(jobSolverTmpDir)) {

@@ -2,7 +2,12 @@
 
 A lite version of the Astrometry.net Nova API built with node.js. Its purpose is to provide an alternative lightweight API to the Astrometry.net full site and suite.
 
-## Latest version: v1.1.6
+## Latest version: v1.1.7
+
+- Added `sigma` and `depth` parameters for the worker/solver. Setting them can boost solver performance, provided you know what you're doing.
+- Updated the installer to include setting those parameters and updated the readme documentation to include the new parameters.
+
+## Version v1.1.6
 
 - Fixed the installer.sh to run 'apt-get update' before attempting to install packages.
 - Source code tidyness: all line endings converted from CRLF to LF and indentations converted to two spaces.
@@ -146,8 +151,10 @@ Parameters:
   -o   enable detected objects image storing in configuration
   -n   enable annotation image storing in configuration
   -z   set stored image scaling factor in configuration
+  -b   set sigma (noise reduction) in configuration
+  -e   set depth (number of fields objs to look at) in configuration
 
-example: ./install.sh -l 1 -a 1 -i 19,18,17,16,15,14,13,12,11,10,9,8,7,6,5 -u /tmp/astro-upload -p 3000 -s 1 -d 1 -c 1 -j 4 -o 1 -n 1 -z 0.5
+example: ./install.sh -l 1 -a 1 -i 19,18,17,16,15,14,13,12,11,10,9,8,7,6,5 -u /tmp/astro-upload -p 3000 -s 1 -d 1 -c 1 -j 4 -o 1 -n 1 -z 0.5 -b 0 -e 0
 ```
 
 About the index numbering, see http://data.astrometry.net/4200/README

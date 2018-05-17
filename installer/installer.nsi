@@ -8,7 +8,7 @@
 !include "strcase.nsh"
 !include "linkopen.nsh"
 
-!define VERSION "v1.1.6"
+!define VERSION "v1.1.7"
 !define APP_VERSION "Astrometry-api-lite ${VERSION}"
 
 Name "Astrometry-api-lite ${VERSION}"
@@ -36,9 +36,11 @@ Page custom CheckInstallStatus
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 ; configuration custom pages here (api, processing)
+Page custom PreJobSettings
 Page custom ApiSettings ApiSettingsLeave
 Page custom DashboardSettings DashboardSettingsLeave
 Page custom JobSettings JobSettingsLeave
+Page custom JobSettings2 JobSettings2Leave
 Page custom SaveConfig
 !insertmacro MUI_PAGE_INSTFILES
 Page custom RunBashScript
@@ -79,6 +81,11 @@ Var CfgStoreNgcImages_CB
 Var CfgStoreNgcImages_Val
 Var CfgImageScale_Field
 Var CfgImageScale_Val
+
+Var CfgSigma_Field
+Var CfgSigma_Val
+Var CfgDepth_Field
+Var CfgDepth_Val
 
 Var LinuxInstallDir
 Var InstallSuccess
@@ -200,8 +207,7 @@ Function ApiSettingsLeave
 FunctionEnd
 
 Function DashboardSettings
-; todo: select worker, api, manager config options.
-!insertmacro MUI_HEADER_TEXT "API dashboard" "Enabling the dashboard"
+  !insertmacro MUI_HEADER_TEXT "API dashboard" "Enabling the dashboard"
 
  	nsDialogs::Create 1018
  	Pop $CfgDialogDashboard
@@ -220,9 +226,11 @@ Function DashboardSettings
 
 	${NSD_CreateCheckBox} 0 165 400 20 "Enable Dashboard"
 	Pop $CfgDashboard_CB
+  ${NSD_Check} $CfgDashboard_CB
 	
 	${NSD_CreateCheckBox} 0 190 400 20 "Enable job canceling from dashboard (not recommended for public APIs)"
 	Pop $CfgJobCancelApi_CB
+  ${NSD_Check} $CfgJobCancelApi_CB
 
 	nsDialogs::Show
 FunctionEnd
@@ -232,9 +240,9 @@ Function DashboardSettingsLeave
 	${NSD_GetState} $CfgJobCancelApi_CB $CfgJobCancelApi_Val
 FunctionEnd
 
-Function JobSettings
-; todo: select worker, api, manager config options.
-	!insertmacro MUI_HEADER_TEXT "Job/worker settings" ""
+Function PreJobSettings
+
+	!insertmacro MUI_HEADER_TEXT "Configuration" "A foreword"
 
  	nsDialogs::Create 1018
  	Pop $CfgDialogProcessing
@@ -244,18 +252,49 @@ Function JobSettings
  	${EndIf}
 ; 	; green "0x21b127"
 ; 	; red "0xd12222"
- 	${NSD_CreateLabel} 0 0 500 20 "Maximum concurrently running solver jobs"
+ 	${NSD_CreateLabel} 0 0 455 40 "Just a quick note before setting the configuration: you will be able to change all the values later on if you wish. The configuration is divided into three files:"
+	Pop $0
+
+	${NSD_CreateLabel} 0 60 445 20 "- dist/api/configuration.json (API/dashboard configuration)"
+	Pop $0
+
+  ${NSD_CreateLabel} 0 80 445 20 "- dist/worker/configuration.json (Worker instance configuration)"
+	Pop $0
+
+  ${NSD_CreateLabel} 0 100 445 20 "- dist/manager/configuration.json (Manager configuration)"
+	Pop $0
+	
+ 	${NSD_CreateLabel} 0 140 455 40 "The readme document that comes with the installation contains explanation of all the parameters and how they affect things."
+	Pop $0
+
+
+	nsDialogs::Show
+FunctionEnd
+
+Function JobSettings
+; todo: select worker, api, manager config options.
+	!insertmacro MUI_HEADER_TEXT "Job/worker settings" "Page 1"
+
+ 	nsDialogs::Create 1018
+ 	Pop $CfgDialogProcessing
+
+ 	${If} $CfgDialogProcessing == error
+ 		Abort
+ 	${EndIf}
+; 	; green "0x21b127"
+; 	; red "0xd12222"
+ 	${NSD_CreateLabel} 0 0 445 20 "Maximum concurrently running solver jobs"
 	Pop $0
 	${NSD_CreateText} 0 20 40 12u "4"
 	Pop $CfgMaxConcurrentWorkers_Field
 	
-	${NSD_CreateCheckBox} 0 65 500 20 "Store object detection images from completed jobs (stored in db, takes some space)"
+	${NSD_CreateCheckBox} 0 65 445 30 "Store object detection images from completed jobs (stored in db, takes some space, also images take time to process)"
 	Pop $CfgStoreObjsImages_CB
 
-	${NSD_CreateCheckBox} 0 110 500 20 "Store annotation images from completed jobs (stored in db, takes some space)"
+	${NSD_CreateCheckBox} 0 110 445 30 "Store annotation images from completed jobs (stored in db, takes some space, also images take time to process)"
 	Pop $CfgStoreNgcImages_CB
 
-	${NSD_CreateLabel} 0 155 500 20 "Image scale of saved images (use < 1.0 scale to save space)"
+	${NSD_CreateLabel} 0 155 445 20 "Image scale of saved images (use < 1.0 scale to save space)"
 	Pop $0
 	${NSD_CreateText} 0 175 50 12u "0.5"
 	Pop $CfgImageScale_Field
@@ -270,6 +309,39 @@ Function JobSettingsLeave
 	${NSD_GetText} $CfgImageScale_Field $CfgImageScale_Val
 	; TODO validation
 FunctionEnd
+
+Function JobSettings2
+; todo: select worker, api, manager config options.
+	!insertmacro MUI_HEADER_TEXT "Job/worker settings" "Page 2"
+
+ 	nsDialogs::Create 1018
+ 	Pop $CfgDialogProcessing
+
+ 	${If} $CfgDialogProcessing == error
+ 		Abort
+ 	${EndIf}
+; 	; green "0x21b127"
+; 	; red "0xd12222"
+ 	${NSD_CreateLabel} 0 0 445 40 "Set sigma parameter (noise reduction, can speed up solves). 0 means do not use (default). Set this only if you know what you're doing."
+	Pop $0
+	${NSD_CreateText} 0 40 40 12u "0"
+	Pop $CfgSigma_Field
+	
+	${NSD_CreateLabel} 0 85 445 40 "Set depth parameter (limit how many field objects are used for solving). 0 means do not use (default). Set this only if you know what you're doing."
+  Pop $0
+	${NSD_CreateText} 0 125 40 12u "0"
+	Pop $CfgDepth_Field
+
+	
+	nsDialogs::Show
+FunctionEnd
+
+Function JobSettings2Leave
+	${NSD_GetText} $CfgSigma_Field $CfgSigma_Val
+	${NSD_GetText} $CfgDepth_Field $CfgDepth_Val	
+	; TODO validation
+FunctionEnd
+
 
 
 Function OnUploadDirBrowse
@@ -502,6 +574,9 @@ Function SaveConfig
 	${EndIf}
 
 	StrCpy $2 "$2 -z $CfgImageScale_Val"
+
+  StrCpy $2 "$2 -b $CfgSigma_Val"
+  StrCpy $2 "$2 -e $CfgDepth_Val"
 
 	FileWrite $1 $2
 	FileClose $1
