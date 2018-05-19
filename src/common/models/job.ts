@@ -77,7 +77,7 @@ export interface JobParams {
   center_dec?: number,
   radius?: number,
 	/** 
-	 * @minimum 2
+	 * @minimum 0
 	*/
   downsample_factor?: number,
   tweak_order?: number

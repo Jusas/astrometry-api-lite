@@ -41,6 +41,12 @@ export class JobsController {
     return result;
   }
 
+  // To comply with Nova also supporting POST
+  @Post("{id}")
+  async getJobPost(id: number): Promise<JobStatusResponse> {
+    return await this.getJob(id);
+  }
+
   @Get("{id}/calibration")
   async getCalibration(id: number): Promise<JobCalibrationResponse> {
     const cd = await Jobs.getCalibrationData(id);
@@ -61,6 +67,13 @@ export class JobsController {
     };
     return result;
   }
+
+  // To comply with Nova also supporting POST
+  @Post("{id}/calibration")
+  async getCalibrationPost(id: number): Promise<JobCalibrationResponse> {
+    return await this.getCalibration(id);
+  }
+
 
   @Get("{id}/info")
   async getInfo(id: number): Promise<JobInfoResponse> {
@@ -92,6 +105,12 @@ export class JobsController {
       status: status
     };
     return result;
+  }
+
+  // To comply with Nova also supporting POST
+  @Post("{id}/info")
+  async getInfoPost(id: number): Promise<JobInfoResponse> {
+    return await this.getInfo(id);
   }
 
 }

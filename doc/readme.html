@@ -202,6 +202,12 @@
             returns 403
           </td>
         </tr>
+        <tr>
+          <td>enableConfigEditApi</td>
+          <td>enables or disables the config edit api, /api/config. When disabled the config edit API just
+            returns 403
+          </td>
+        </tr>
       </tbody>
     </table>
 
@@ -287,18 +293,18 @@
         </tr>
         <tr>
           <td>sigma</td>
-          <td>Sigma value that the solver uses (noise reduction). By default 0, which disables the use of the parameter. Higher value removes more noise. Higher values result in less 
-            found sources, which is likely to speed up the solving process. Use it if you feel you need more performance out of the solver. 
-            Experiment what value works for your setup.
+          <td>Sigma value that the solver uses (noise reduction). By default 0, which disables the use of the parameter. Higher
+            value removes more noise. Higher values result in less found sources, which is likely to speed up the solving
+            process. Use it if you feel you need more performance out of the solver. Experiment what value works for your
+            setup.
           </td>
         </tr>
         <tr>
           <td>depth</td>
-          <td>Depth value that the solver uses (limits the number of field objects used for solving). By default 0, which disables the use of the parameter.
-            Lower number means less field objects are used for solving, resulting in faster solve times. 
-            However if the limit is too low, it may well result in failed solves.
-            Use it if you feel you need more performance out of the solver. 
-            Experiment what value works for your setup.
+          <td>Depth value that the solver uses (limits the number of field objects used for solving). By default 0, which disables
+            the use of the parameter. Lower number means less field objects are used for solving, resulting in faster solve
+            times. However if the limit is too low, it may well result in failed solves. Use it if you feel you need more
+            performance out of the solver. Experiment what value works for your setup.
           </td>
         </tr>
       </tbody>
@@ -312,6 +318,10 @@
       <a href="http://localhost:3000/dashboard">http://localhost:3000/dashboard</a> by default is a simple dashboard that displays the latest jobs, their statuses
       and the status of your Worker Manager and how many Workers are currently running. The dashboard automatically refreshes
       the data every 5 seconds.
+    </p>
+    <p>
+      In 1.2.0, limited configuration editing feature was introduced, enabling you to easily edit values that you most likely may
+      want to frequently modify.
     </p>
     <img src="dashboard.png" />
     <p>

@@ -11,11 +11,13 @@ import * as jobsController from "./controllers/jobs";
 import * as statsController from "./controllers/stats";
 import * as resultImagesController from "./controllers/result-images";
 import * as jobcontrolController from "./controllers/jobcontrol";
+import * as configEditController from "./controllers/configedit";
 import { RegisterRoutes } from "./generated/routes/routes";
 import { NextFunction } from "express-serve-static-core";
 import { asyncErrorHandler } from "./middleware/error-handler";
 import { jsonContentWrangler } from "./middleware/request-json-wrangler";
 import { ApiError } from "./models/error";
+import { ValidateError } from "tsoa";
 
 const app = express();
 
@@ -46,6 +48,12 @@ if (!config.enableJobCancellationApi) {
     res.json({ status: "unauthorized" });
   });
 }
+if (!config.enableConfigEditApi) {
+  app.use(/\/api\/config/, (req: express.Request, res: express.Response) => {
+    res.status(403);
+    res.json({ status: "unauthorized" });
+  });
+}
 
 RegisterRoutes(app);
 
@@ -54,12 +62,19 @@ app.use((err: any, req: express.Request, res: express.Response, next: NextFuncti
   if (err instanceof ApiError) {
     res.status((<ApiError>err).statusCode);
   }
+  else if(err instanceof ValidateError) {
+    res.status(err.status);
+  }
   else {
     res.status(500);
   }
   console.log(err);
+  let msg = err.message;
+  if(!msg && err instanceof ValidateError) {
+    msg = "Validation error: " + JSON.stringify(err.fields);
+  }
   res.json({
-    message: err.message
+    message: msg
   });
 });
 

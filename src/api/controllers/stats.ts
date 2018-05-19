@@ -23,12 +23,16 @@ export class StatsController {
   @Get("supports")
   async getSupportData(): Promise<ApiSupports> {
     let supports: ApiSupports = {
-      jobCancellationSupported: false
+      jobCancellationSupported: false,
+      configEditingSupported: false
     };
     const config = configuration();
     console.log("config", config);
     if (config["enableJobCancellationApi"]) {
       supports.jobCancellationSupported = true;
+    }
+    if(config["enableConfigEditApi"]) {
+      supports.configEditingSupported = true;
     }
     return supports;
   }

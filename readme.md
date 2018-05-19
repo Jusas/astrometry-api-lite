@@ -2,10 +2,14 @@
 
 A lite version of the Astrometry.net Nova API built with node.js. Its purpose is to provide an alternative lightweight API to the Astrometry.net full site and suite.
 
-## Latest version: v1.1.7
+
+
+## Latest version: v1.2.0
 
 - Added `sigma` and `depth` parameters for the worker/solver. Setting them can boost solver performance, provided you know what you're doing.
 - Updated the installer to include setting those parameters and updated the readme documentation to include the new parameters.
+- Added configuration editing feature to the dashboard, which can be enabled/disabled via configuration.
+
 
 ## Version v1.1.6
 
@@ -68,6 +72,7 @@ Additionally, the following endpoints are provided for management purposes:
 - /api/result-images/annotation/{id}
 - /api/result-images/objects/{id}
 - /api/job-control/cancel/{id}
+- /api/config
 
 #### API Dashboard
 
@@ -83,7 +88,8 @@ The dashboard provides some basic information:
 The dashboard can be configured from the __API's configuration.json__, and these values enable/disable the features:
 ```
 	"enableDashboard": true,
-	"enableJobCancellationApi": true
+	"enableJobCancellationApi": true,
+  "enableConfigEditApi": true
 ```
 
 If you do not with to use/expose the dashboard, you can disable it via the configuration.
@@ -131,8 +137,8 @@ chmod u+x install.sh
 Options being:
 ```
 -l <0|1> -a <0|1> [-i <string>] -u <string> -p <num>
--s <0|1> -d <0|1> -c <0|1> -j <num> -o <0|1> -n <0|1>
--z <num>
+-s <0|1> -d <0|1> -c <0|1> -f <0|1> -j <num> -o <0|1> -n <0|1>
+-z <num> -b <num> -e <num>
 
 Parameters:
 <0|1> means no/yes, ie. '-l 1' means 'install api-lite'
@@ -147,6 +153,7 @@ Parameters:
   -s   enable Swagger UI in configuration
   -d   enable Dashboard in configuration
   -c   enable job canceling in Dashboard
+  -f   enable configuration editing in Dashboard
   -j   set maximum concurrent jobs in configuration
   -o   enable detected objects image storing in configuration
   -n   enable annotation image storing in configuration
@@ -154,7 +161,7 @@ Parameters:
   -b   set sigma (noise reduction) in configuration
   -e   set depth (number of fields objs to look at) in configuration
 
-example: ./install.sh -l 1 -a 1 -i 19,18,17,16,15,14,13,12,11,10,9,8,7,6,5 -u /tmp/astro-upload -p 3000 -s 1 -d 1 -c 1 -j 4 -o 1 -n 1 -z 0.5 -b 0 -e 0
+example: ./install.sh -l 1 -a 1 -i 19,18,17,16,15,14,13,12,11,10,9,8,7,6,5 -u /tmp/astro-upload -p 3000 -s 1 -d 1 -c 1 -f 1 -j 4 -o 1 -n 1 -z 0.5 -b 0 -e 0
 ```
 
 About the index numbering, see http://data.astrometry.net/4200/README
@@ -251,6 +258,7 @@ A few configuration values can be set for each application. The defaults may not
 | enableSwagger | enables or disables the swagger UI, accessible at /swagger |
 | enableDashboard | enables or disables the dashboard at /dashboard |
 | enableJobCancellationApi | enables or disables the job cancellation api, /api/job-control/cancel/{id}. When disabled the control API just returns 403. |
+| enableConfigEditApi | enables or disables the config edit api, /api/config. When disabled the config edit API just returns 403 |
 
 In addition you can use the environment variable `AAPI_LITE_ENV` to load a different configuration file if you want. Ie. calling
 
@@ -283,6 +291,8 @@ will load `configuration.local.json` file instead.
 | storeObjsImages | true or false, whether or not you want to store the resulting object images for each job. Stores them in the job database in base64 format. |
 | storeNgcImages | true or false, whether or not you want to store the resulting NGC (annotation) images for each job. Stores them in the job database in base64 format. |
 | imageScale | Image scaling to apply to the saved images (if you want to save space) |
+| sigma | Sigma value that the solver uses (noise reduction). By default 0, which disables the use of the parameter. Higher value removes more noise. Higher values result in less found sources, which is likely to speed up the solving process. Use it if you feel you need more performance out of the solver. Experiment what value works for your setup. |
+| depth | Depth value that the solver uses (limits the number of field objects used for solving). By default 0, which disables the use of the parameter. Lower number means less field objects are used for solving, resulting in faster solve times. However if the limit is too low, it may well result in failed solves. Use it if you feel you need more performance out of the solver. Experiment what value works for your setup. |
 
 ### Data storage
 

@@ -47,4 +47,12 @@ export class SubmissionsController {
     return result;
   }
 
+  /**
+   * @isInt id
+   */
+  @Post("{id}")
+  async post(id: number): Promise<SubmissionInfoResponse> {
+    return await this.get(id);
+  }
+
 }

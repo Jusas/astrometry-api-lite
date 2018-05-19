@@ -8,7 +8,7 @@
 !include "strcase.nsh"
 !include "linkopen.nsh"
 
-!define VERSION "v1.1.7"
+!define VERSION "v1.2.0"
 !define APP_VERSION "Astrometry-api-lite ${VERSION}"
 
 Name "Astrometry-api-lite ${VERSION}"
@@ -70,6 +70,8 @@ Var CfgDashboard_CB
 Var CfgDashboard_Val
 Var CfgJobCancelApi_CB
 Var CfgJobCancelApi_Val
+Var CfgConfEditApi_CB
+Var CfgConfEditApi_Val
 
 Var CfgTempFileDir_Field
 Var CfgTempFileDir_Val
@@ -224,13 +226,17 @@ Function DashboardSettings
 	Pop $0
 	${NSD_SetImage} $0 "$PLUGINSDIR\dashboard.bmp" $1
 
-	${NSD_CreateCheckBox} 0 165 400 20 "Enable Dashboard"
+	${NSD_CreateCheckBox} 0 155 400 20 "Enable Dashboard"
 	Pop $CfgDashboard_CB
   ${NSD_Check} $CfgDashboard_CB
 	
-	${NSD_CreateCheckBox} 0 190 400 20 "Enable job canceling from dashboard (not recommended for public APIs)"
+	${NSD_CreateCheckBox} 0 180 400 20 "Enable job canceling from dashboard (not recommended for public APIs)"
 	Pop $CfgJobCancelApi_CB
   ${NSD_Check} $CfgJobCancelApi_CB
+
+  ${NSD_CreateCheckBox} 0 205 400 20 "Enable configuration editor in dashboard (not recommended for public APIs)"
+	Pop $CfgConfEditApi_CB
+  ${NSD_Check} $CfgConfEditApi_CB
 
 	nsDialogs::Show
 FunctionEnd
@@ -238,6 +244,7 @@ FunctionEnd
 Function DashboardSettingsLeave
 	${NSD_GetState} $CfgDashboard_CB $CfgDashboard_Val
 	${NSD_GetState} $CfgJobCancelApi_CB $CfgJobCancelApi_Val
+  ${NSD_GetState} $CfgConfEditApi_CB $CfgConfEditApi_Val
 FunctionEnd
 
 Function PreJobSettings
@@ -559,6 +566,12 @@ Function SaveConfig
 		StrCpy $2 "$2 -c 1"
 	${Else}
 		StrCpy $2 "$2 -c 0"
+	${EndIf}
+
+  ${If} $CfgConfEditApi_Val == ${BST_CHECKED}
+		StrCpy $2 "$2 -f 1"
+	${Else}
+		StrCpy $2 "$2 -f 0"
 	${EndIf}
 
 	${If} $CfgStoreObjsImages_Val == ${BST_CHECKED}

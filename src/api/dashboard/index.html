@@ -15,6 +15,50 @@
       margin-bottom: 1rem;
     }
 
+    .page-navi {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid beige;
+    }
+
+    .navi-item {
+      display: block;
+      width: 50%;
+      float: left;
+      text-align: center;
+      height: 2em;
+      line-height: 2em;
+      font-size: 1.5em;
+      color: #000;
+      cursor: pointer;
+    }
+
+    .navi-item.active {
+      background: beige;
+    }
+
+    .error-list {
+      color: red;
+    }
+
+    .conf-save-status {
+      margin: 1em 0;
+      font-weight: bold;      
+    }
+
+    .conf-save-saved {
+      color: forestgreen;
+    }
+
+    .conf-save-saving {
+      color: cornflowerblue;
+    }
+
+    .conf-save-err {
+      color: red;
+    }
+
     .jobtable {
       width: 100%;
     }
@@ -185,160 +229,176 @@
       <h1>Astrometry-api-lite</h1>
       <hr/>
     </div>
-    <div class="container">
-      <br/>
-      <h3>Status</h3>
-      <table>
-        <tr>
-          <td style="min-width:150px">Manager:</td>
-          <td>
-            <b style="color:green" v-if="status.workerManagerRunning">RUNNING</b>
-            <b style="color:red" v-else>DOWN</b>
-          </td>
-        </tr>
-        <tr>
-          <td>Workers active:</td>
-          <td>{{status.activeWorkers.length}}</td>
-        </tr>
-      </table>
-      <hr/>
-    </div>
-    <div class="container">
-      <br/>
-      <h3>Latest jobs</h3>
-      <table class="jobtable">
-        <thead>
-          <th>Id</th>
-          <th>Created</th>
-          <th>State</th>
-          <th>Started</th>
-          <th>Ended</th>
-          <th></th>
-          <!-- <th>Duration</th>
-						<th>Orientation</th>
-						<th>Pixscale</th>
-						<th>Radius</th>
-						<th>Ra</th>
-						<th>Dec</th>
-						<th>Objects</th>
-						<th>Annotated</th> -->
-        </thead>
-        <tbody>
-          <!-- <div v-for="job in latestJobs"> -->
-          <tr v-for="job in latestJobs">
-            <td colspan="6" class="jobcell">
-              <div class="list-cell">
-                <table class="jobtable">
-                  <tr>
-                    <td>{{job.id}}</td>
-                    <td>{{makeDate(job.created)}}</td>
-                    <td>
-                      <span v-if="job.processing_state == 0" class="s-queued">QUEUED
-                        <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span>
-                      </span>
-                      <span v-if="job.processing_state == 1" class="s-processing">PROCESSING
-                        <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span>
-                      </span>
-                      <span v-if="job.processing_state == 2" class="s-success">SUCCESS</span>
-                      <span v-if="job.processing_state == 3" class="s-failed">FAILED</span>
-                    </td>
-                    <td>{{makeDate(job.processing_started)}}</td>
-                    <td>{{makeDate(job.processing_finished)}}</td>
-                    <td>
-                      <button type="button" class="btn" v-on:click="toggleDetails(job)">
-                        <span v-if="!isOpen(job)" class="show-details"></span>
-                        <span v-if="isOpen(job)" class="hide-details"></span>
-                      </button>
-                    </td>
-                  </tr>
-                </table>
-                <table class="detailtable" v-if="isOpen(job)">
-                  <tr>
-                    <td></td>
-                    <td>
-                      <div class="job-details">
-                        <div class="result-numbers">
-                          <div class="detail-container">
-                            <b>Duration</b>
-                            <br/> {{job.processing_finished && job.processing_started ? makeTimespan(job.processing_finished -
-                            job.processing_started) : '-'}}
-                          </div>
-                          <div class="detail-container">
-                            <b>Orientation</b>
-                            <br/> {{job.processing_state == 2 ? job.result_orientation : '-'}}
-                          </div>
-                          <div class="detail-container">
-                            <b>Pixscale</b>
-                            <br/> {{job.processing_state == 2 ? job.result_pixscale : '-'}}
-                          </div>
-                          <div class="detail-container">
-                            <b>Radius</b>
-                            <br/> {{job.processing_state == 2 ? job.result_radius : '-'}}
-                          </div>
-                          <div class="detail-container">
-                            <b>Ra</b>
-                            <br/> {{job.processing_state == 2 ? job.result_ra : '-'}}
-                          </div>
-                          <div class="detail-container">
-                            <b>Dec</b>
-                            <br/> {{job.processing_state == 2 ? job.result_dec : '-'}}
-                          </div>
-                        </div>
-                        <div class="result-images">
-                          <div v-if="job.img_objs_thumb" class="result-img">
-                            <a v-on:click="triggerThumbModal(job.id, 'objs')">
-                              <img :src="job.img_objs_thumb" class="resultThumb">
-                            </a>
-                          </div>
-                          <div v-if="job.img_ngc_thumb" class="result-img">
-                            <a v-on:click="triggerThumbModal(job.id, 'ngc')">
-                              <img :src="job.img_ngc_thumb" class="resultThumb">
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </table>
 
-              </div>
-            </td>
-            <!-- <td>{{job.id}}</td>
-							<td class="datetd">{{makeDate(job.created)}}</td>
-							<td style="min-width:9em">
-								<span v-if="job.processing_state == 0" class="s-queued">QUEUED <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span></span>
-								<span v-if="job.processing_state == 1" class="s-processing">PROCESSING <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span></span>
-								<span v-if="job.processing_state == 2" class="s-success">SUCCESS</span>
-								<span v-if="job.processing_state == 3" class="s-failed">FAILED</span>
-							</td>
-							<td class="datetd">{{makeDate(job.processing_started)}}</td>
-							<td class="datetd">{{makeDate(job.processing_finished)}}</td>
-							<td>{{job.processing_finished && job.processing_started ? makeTimespan(job.processing_finished - job.processing_started) : '-'}}</td>
-							<td>{{job.processing_state == 2 ? job.result_orientation : '-'}}</td>
-							<td>{{job.processing_state == 2 ? job.result_pixscale : '-'}}</td>
-							<td>{{job.processing_state == 2 ? job.result_radius : '-'}}</td>
-							<td>{{job.processing_state == 2 ? job.result_ra : '-'}}</td>
-							<td>{{job.processing_state == 2 ? job.result_dec : '-'}}</td>
-							<td>
-								<div v-if="job.img_objs_thumb">
-									<a v-on:click="triggerThumbModal(job.id, 'objs')">
-										<img :src="job.img_objs_thumb" class="resultThumb">
-									</a>
-								</div>
-							</td>
-							<td>
-								<div v-if="job.img_ngc_thumb">
-									<a v-on:click="triggerThumbModal(job.id, 'ngc')">
-										<img :src="job.img_ngc_thumb" class="resultThumb">
-									</a>
-								</div>
-							</td>
-						</tr> -->
-            <!-- </div> -->
-        </tbody>
-      </table>
+    <div class="container">
+      <div class="page-navi">
+        <a class="navi-item" v-bind:class="{active: activeView == 'status'}" v-on:click="activeView = 'status'">Status</a>
+        <a class="navi-item" v-bind:class="{active: activeView == 'config'}" v-on:click="activeView = 'config'">Config</a>
+      </div>
     </div>
+
+    <status inline-template v-if="activeView == 'status'">
+      <div>
+        <div class="container">
+          <br/>
+          <!-- <h3>Status</h3> -->
+          <table>
+            <tr>
+              <td style="min-width:150px">Manager:</td>
+              <td>
+                <b style="color:green" v-if="status.workerManagerRunning">RUNNING</b>
+                <b style="color:red" v-else>DOWN</b>
+              </td>
+            </tr>
+            <tr>
+              <td>Workers active:</td>
+              <td>{{status.activeWorkers.length}}</td>
+            </tr>
+          </table>
+          <hr/>
+        </div>
+        <div class="container">
+          <br/>
+          <h3>Latest jobs</h3>
+          <table class="jobtable">
+            <thead>
+              <th>Id</th>
+              <th>Created</th>
+              <th>State</th>
+              <th>Started</th>
+              <th>Ended</th>
+              <th></th>
+            </thead>
+            <tbody>
+              <tr v-for="job in latestJobs">
+                <td colspan="6" class="jobcell">
+                  <div class="list-cell">
+                    <table class="jobtable">
+                      <tr>
+                        <td>{{job.id}}</td>
+                        <td>{{makeDate(job.created)}}</td>
+                        <td>
+                          <span v-if="job.processing_state == 0" class="s-queued">QUEUED
+                            <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span>
+                          </span>
+                          <span v-if="job.processing_state == 1" class="s-processing">PROCESSING
+                            <span style="cursor:pointer" v-if="supports.jobCancellationSupported" v-on:click="cancelJob(job)">&#x274C;</span>
+                          </span>
+                          <span v-if="job.processing_state == 2" class="s-success">SUCCESS</span>
+                          <span v-if="job.processing_state == 3" class="s-failed">FAILED</span>
+                        </td>
+                        <td>{{makeDate(job.processing_started)}}</td>
+                        <td>{{makeDate(job.processing_finished)}}</td>
+                        <td>
+                          <button type="button" class="btn" v-on:click="toggleDetails(job)">
+                            <span v-if="!isOpen(job)" class="show-details"></span>
+                            <span v-if="isOpen(job)" class="hide-details"></span>
+                          </button>
+                        </td>
+                      </tr>
+                    </table>
+                    <table class="detailtable" v-if="isOpen(job)">
+                      <tr>
+                        <td></td>
+                        <td>
+                          <div class="job-details">
+                            <div class="result-numbers">
+                              <div class="detail-container">
+                                <b>Duration</b>
+                                <br/> {{job.processing_finished && job.processing_started ? makeTimespan(job.processing_finished
+                                - job.processing_started) : '-'}}
+                              </div>
+                              <div class="detail-container">
+                                <b>Orientation</b>
+                                <br/> {{job.processing_state == 2 ? job.result_orientation : '-'}}
+                              </div>
+                              <div class="detail-container">
+                                <b>Pixscale</b>
+                                <br/> {{job.processing_state == 2 ? job.result_pixscale : '-'}}
+                              </div>
+                              <div class="detail-container">
+                                <b>Radius</b>
+                                <br/> {{job.processing_state == 2 ? job.result_radius : '-'}}
+                              </div>
+                              <div class="detail-container">
+                                <b>Ra</b>
+                                <br/> {{job.processing_state == 2 ? job.result_ra : '-'}}
+                              </div>
+                              <div class="detail-container">
+                                <b>Dec</b>
+                                <br/> {{job.processing_state == 2 ? job.result_dec : '-'}}
+                              </div>
+                            </div>
+                            <div class="result-images">
+                              <div v-if="job.img_objs_thumb" class="result-img">
+                                <a v-on:click="triggerThumbModal(job.id, 'objs')">
+                                  <img :src="job.img_objs_thumb" class="resultThumb">
+                                </a>
+                              </div>
+                              <div v-if="job.img_ngc_thumb" class="result-img">
+                                <a v-on:click="triggerThumbModal(job.id, 'ngc')">
+                                  <img :src="job.img_ngc_thumb" class="resultThumb">
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                  </div>
+                </td>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </status>
+
+    <config inline-template v-if="activeView == 'config'">
+      <form>
+        <div class="container">
+          <br />
+          <h3>Worker settings</h3>
+          <hr />
+          <input type="checkbox" id="saveObjImages" v-model="config.saveObjImages">
+          <label for="saveObjImages">Save object images (field object discovery)</label>
+          <br />
+          <input type="checkbox" id="saveNgcImages" v-model="config.saveNgcImages">
+          <label for="saveNgcImages">Save NGC images (annotations)</label>
+          <br />
+          <input type="text" id="imageScale" style="width: 4em" v-model="config.imageScale">
+          <label for="imageScale">Image scaling to apply to the saved images (if you want to save space)</label>
+          <br />
+          <input type="text" id="sigma" style="width: 4em" v-model="config.sigma">
+          <label for="sigma">Sigma value that the solver uses (noise reduction). Use
+            <b>0</b> to disable the parameter.</label>
+          <br />
+          <input type="text" id="depth" style="width: 4em" v-model="config.depth">
+          <label for="depth">Depth value that the solver uses (limits the number of field objects used for solving). Use
+            <b>0</b> to disable the parameter.</label>
+        </div>
+        <div class="container">
+          <hr />
+          <input type="button" value="Save" v-on:click="validateAndSendForm($event)">
+        </div>
+        <div class="container">
+          <div class="conf-save-status" v-bind:class="{ 'conf-save-saving': saveStatusCode == 1, 
+          'conf-save-saved': saveStatusCode == 2, 'conf-save-err': saveStatusCode == 3 }">{{ saveStatus }}</div>
+          <br />
+          <div class="error-list">
+            <ul>
+              <li v-for="err in errors">
+                {{ err }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </form>
+    </config>
+
   </div>
+  <script src="status.js"></script>
+  <script src="config.js"></script>
   <script src="main.js"></script>
 </body>
 

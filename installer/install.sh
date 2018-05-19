@@ -10,8 +10,8 @@ usage() {
   echo "optionally installs its dependencies."
   echo 
   echo "Usage: $0 -l <0|1> -a <0|1> [-i <string>] -u <string> -p <num>"
-  echo "       -s <0|1> -d <0|1> -c <0|1> -j <num> -o <0|1> -n <0|1>"
-  echo "       -z <num> -b <num> -c <num>"
+  echo "       -s <0|1> -d <0|1> -c <0|1> -f <0|1> -j <num> -o <0|1> -n <0|1>"
+  echo "       -z <num> -b <num> -e <num>"
   echo 
   echo "Alternatively: $0 \$(< argsfile)"
   echo
@@ -28,6 +28,7 @@ usage() {
   echo "  -s   enable Swagger UI in configuration"
   echo "  -d   enable Dashboard in configuration"
   echo "  -c   enable job canceling in Dashboard"
+  echo "  -f   enable configuration editing in Dashboard"
   echo "  -j   set maximum concurrent jobs in configuration"
   echo "  -o   enable detected objects image storing in configuration"
   echo "  -n   enable annotation image storing in configuration"
@@ -53,8 +54,8 @@ function update_apt() {
   fi
 }
 
-# v1.1.7 release.
-RELEASE_VER="1.1.7"
+# v1.2.0 release.
+RELEASE_VER="1.2.0"
 SOURCE_PACKAGE="https://github.com/Jusas/astrometry-api-lite/archive/v${RELEASE_VER}.zip"
 
 INST_APILITE=
@@ -71,6 +72,7 @@ INST_STORE_ANNOTATIONS=
 INST_IMG_SCALE=1
 INST_SIGMA=0
 INST_DEPTH=0
+INST_DASHBOARD_CONFEDIT=
 
 APT_UPDATED=0
 
@@ -79,7 +81,7 @@ if [ "$1" == "--help" ]; then
   exit 0
 fi
 
-while getopts l:a:i:u:p:s:d:c:j:o:n:z:b:e: option
+while getopts l:a:i:u:p:s:d:c:j:o:n:z:b:e:f: option
 do
     case "${option}"
     in
@@ -97,6 +99,7 @@ do
       z) INST_IMG_SCALE=${OPTARG};;
       b) INST_SIGMA=${OPTARG};;
       e) INST_DEPTH=${OPTARG};;
+      f) INST_DASHBOARD_CONFEDIT=${OPTARG};;
       *) usage;;
     esac
 done
@@ -119,6 +122,7 @@ unset IFS;
 [[ "$INST_STORE_ANNOTATIONS" -gt "0" ]] && storeAnnoImg="yes" || storeAnnoImg="no"
 [[ "$INST_SIGMA" != "0" ]] && useSigma="$INST_SIGMA" || useSigma="no"
 [[ "$INST_DEPTH" != "0" ]] && useDepth="$INST_DEPTH" || useDepth="no"
+[[ "$INST_DASHBOARD_CONFEDIT" != "0" ]] && enableDashboardConfEdit="yes" || enableDashboardConfEdit="no"
 
 echo
 echo "---------------------------------------"
@@ -134,6 +138,7 @@ if [ "${INST_APILITE}" -gt "0" ]; then
   echo "    Enable Swagger: $enableSwagger"
   echo "    Enable Dashboard: $enableDashboard"
   echo "    Enable Dashboard job canceling: $enableDashboardCancel"
+  echo "    Enable Dashboard configuration editor: $enableDashboardConfEdit"
   echo "    Set API port to: $INST_API_PORT"
   echo "    Set file upload dir to: $INST_UPLOAD_DIR"
   echo "- Configuring Manager/Workers:"
@@ -291,26 +296,33 @@ if [ ! -z "$INST_APILITE" ] && [ "$INST_APILITE" -gt "0" ]; then
     if [ "$INST_SWAGGER" -gt "0" ]; then
       swag="true"
     fi
-    sed -i "s/\(\"enableSwagger\":\)\([ tab]*\)\([0-9]\+\)/\1${swag}/" dist/api/configuration.json
+    sed -i "s/\(\"enableSwagger\":\)\([ tab]*\)\([0-9a-zA-Z]\+\)/\1${swag}/" dist/api/configuration.json
   fi
   if [ ! -z "$INST_DASHBOARD" ]; then
     dash="false"
     if [ "$INST_DASHBOARD" -gt "0" ]; then
       dash="true"
     fi
-    sed -i "s/\(\"enableDashboard\":\)\([ tab]*\)\([0-9]\+\)/\1${dash}/" dist/api/configuration.json
+    sed -i "s/\(\"enableDashboard\":\)\([ tab]*\)\([0-9a-zA-Z]\+\)/\1${dash}/" dist/api/configuration.json
   fi
   if [ ! -z "$INST_DASHBOARD_CANCEL" ]; then
     dashc="false"
     if [ "$INST_DASHBOARD_CANCEL" -gt "0" ]; then
       dashc="true"
     fi
-    sed -i "s/\(\"enableJobCancellationApi\":\)\([ tab]*\)\([0-9]\+\)/\1${dashc}/" dist/api/configuration.json
+    sed -i "s/\(\"enableJobCancellationApi\":\)\([ tab]*\)\([0-9a-zA-Z]\+\)/\1${dashc}/" dist/api/configuration.json
+  fi
+  if [ ! -z "$INST_DASHBOARD_CONFEDIT" ]; then
+    dashcfged="false"
+    if [ "$INST_DASHBOARD_CONFEDIT" -gt "0" ]; then
+      dashcfged="true"
+    fi
+    sed -i "s/\(\"enableConfigEditApi\":\)\([ tab]*\)\([0-9a-zA-Z]\+\)/\1${dashcfged}/" dist/api/configuration.json
   fi
   if [ ! -z "$INST_UPLOAD_DIR" ]; then
     safeDirStr=$(echo "$INST_UPLOAD_DIR" | sed -r 's/\//\\\//g')
-    sed -i "s/\(\"queueFileUploadDir\":\)\([ tab]*\)\([0-9]\+\)/\1${safeDirStr}/" dist/api/configuration.json
-    sed -i "s/\(\"queueFileUploadDir\":\)\([ tab]*\)\([0-9]\+\)/\1${safeDirStr}/" dist/worker/configuration.json
+    sed -i "s/\(\"queueFileUploadDir\":\)\([ tab]*\)\"\(.\+\)\"/\1\"${safeDirStr}\"/" dist/api/configuration.json
+    sed -i "s/\(\"queueFileUploadDir\":\)\([ tab]*\)\"\(.\+\)\"/\1\"${safeDirStr}\"/" dist/worker/configuration.json
   fi
   if [ ! -z "$INST_MAXJOBS" ]; then
     sed -i "s/\(\"maxConcurrentWorkers\":\)\([ tab]*\)\([0-9]\+\)/\1${INST_MAXJOBS}/" dist/manager/configuration.json
@@ -320,14 +332,14 @@ if [ ! -z "$INST_APILITE" ] && [ "$INST_APILITE" -gt "0" ]; then
     if [ "$INST_STORE_OBJIMG" -gt "0" ]; then
       objImg="true"
     fi
-    sed -i "s/\(\"storeObjsImages\":\)\([ tab]*\)\([0-9]\+\)/\1${objImg}/" dist/worker/configuration.json
+    sed -i "s/\(\"storeObjsImages\":\)\([ tab]*\)\([0-9a-zA-Z]\+\)/\1${objImg}/" dist/worker/configuration.json
   fi
   if [ ! -z "$INST_STORE_ANNOTATIONS" ]; then
     anno="false"
     if [ "$INST_STORE_ANNOTATIONS" -gt "0" ]; then
       anno="true"
     fi
-    sed -i "s/\(\"storeNgcImages\":\)\([ tab]*\)\([0-9]\+\)/\1${anno}/" dist/worker/configuration.json
+    sed -i "s/\(\"storeNgcImages\":\)\([ tab]*\)\([0-9a-zA-Z]\+\)/\1${anno}/" dist/worker/configuration.json
   fi
   if [ ! -z "$INST_IMG_SCALE" ]; then
     sed -i "s/\(\"imageScale\":\)\([ tab]*\)\([0-9.]\+\)/\1${INST_IMG_SCALE}/" dist/worker/configuration.json

@@ -308,7 +308,7 @@ function buildSolveParams(queueEntry: JobQueueEntry, outDir: string): Array<stri
     params.push(...["--dec", queueEntry.p_center_dec]);
     params.push(...["--radius", queueEntry.p_radius]);
   }
-  if (queueEntry.p_downsample_factor) {
+  if (queueEntry.p_downsample_factor && queueEntry.p_downsample_factor >= 2) {
     params.push(...["--downsample", queueEntry.p_downsample_factor]);
   }
   if (queueEntry.p_tweak_order) {
